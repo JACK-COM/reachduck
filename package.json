@@ -1,14 +1,12 @@
 {
-  "name": "@jackcom/reachducks",
+  "name": "@jackcom/reachduck",
   "version": "0.0.1",
-  "description": "A front-end API wrapper around Reach stdlib",
+  "description": "A front-end API over your Reach stdlib instance, with additional chain-specific helpers. Designed to simplify cross-chain DApp development.",
   "main": "dist/index.js",
   "files": [
     "dist/*/**"
   ],
   "keywords": [
-    "reach",
-    "reach-sh",
     "reach stdlib"
   ],
   "author": "@jackcom",

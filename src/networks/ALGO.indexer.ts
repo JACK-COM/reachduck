@@ -4,7 +4,7 @@
  * ----------------
  * Search for transactions and/or asset details
  */
-import algosdk from "algosdk";
+import { Indexer } from "algosdk";
 
 type TxnSearchOpts = {
   amount?: number;
@@ -13,20 +13,20 @@ type TxnSearchOpts = {
 };
 
 /** @private Algorand Indexer instance (for querying the chain) */
-let indexer: algosdk.Indexer;
+let indexer: Indexer;
 const emptyAcct: Record<string, any> = { assets: [], "created-apps": [] };
 
 /**
  * @description Get Algo indexer client instance
  * @returns Algo Indexer client
  */
-export function useIndexerClient(): algosdk.Indexer {
+export function useIndexerClient(): Indexer {
   if (!indexer) {
     const INDEXER = "https://algoindexer.testnet.algoexplorerapi.io/";
     const INDEXER_TOKEN =
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     const ixURL = new URL(INDEXER);
-    indexer = new algosdk.Indexer(INDEXER_TOKEN, INDEXER, ixURL.port);
+    indexer = new Indexer(INDEXER_TOKEN, INDEXER, ixURL.port);
   }
 
   return indexer;
