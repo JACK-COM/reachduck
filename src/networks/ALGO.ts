@@ -2,14 +2,14 @@ import MyAlgoConnect from "@randlabs/myalgo-connect";
 import { formatAddress, tokenMetadata } from "../reachlib-api";
 import { ReachAccount } from "reach-types";
 import { getAccount } from "./ALGO.indexer";
-import { disconnectWC, getWCClient } from "./ALGO.WalletConnect";
+import { disconnectWC, createWCClient } from "./ALGO.WalletConnect";
 
 export const AlgoInterface = {
   disconnectUser: disconnectWC,
   fetchAccount,
   getWalletConnectClientOpts: () => ({
     WalletConnect: function () {
-      return getWCClient();
+      return createWCClient();
     },
   }),
   getWebWalletClientOpts,

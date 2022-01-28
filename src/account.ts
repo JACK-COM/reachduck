@@ -29,7 +29,7 @@ export function useWalletConnect() {
 }
 
 /** Connect user Wallet */
-export async function connectWallet() {
+export async function connectUser() {
   const { getDefaultAccount } = createReachAPI();
   try {
     const account: ReachAccount = await getDefaultAccount();
@@ -71,19 +71,26 @@ export function disconnectUser() {
 }
 
 /** Reconnect user session */
-export async function reconnectUser(addr: string | null = null) {
+export async function reconnectUser(addr?: string | null) {
   const reach = createReachAPI();
   if (addr) {
     useWebWallet();
-    hydrateUser(await reach.connectAccount({ addr }));
+    return hydrateUser(await reach.connectAccount({ addr }));
   } else {
     useWalletConnect();
-    hydrateUser(await reach.getDefaultAccount());
+    return hydrateUser(await reach.getDefaultAccount());
   }
 }
 
+export type ConnectedUserData = {
+  account: ReachAccount;
+  address: string;
+  balance: string;
+  loading: boolean;
+} & Record<string, any>;
+
 /** HELPER | Restart user session */
-async function hydrateUser(account: ReachAccount) {
+async function hydrateUser(account: ReachAccount): Promise<ConnectedUserData> {
   const reach = createReachAPI();
   const connectorInterface = createConnectorAPI();
   const address = reach.formatAddress(account.getAddress());
