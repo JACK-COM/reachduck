@@ -3,12 +3,6 @@
     "allowJs": true,
     "downlevelIteration": true,
     "esModuleInterop": true,
-    "baseUrl": "src/",
-    "lib": ["ESNext", "DOM"],
-    "noEmit": false,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "useDefineForClassFields": true,
     "module": "esnext",
     "moduleResolution": "node",
     "noImplicitAny": true,
@@ -16,7 +10,7 @@
     "outDir": "./dist/",
     "sourceMap": true,
     "strict": true,
-    "target": "es5"
+    "target": "es2015",
   },
-  "include": [ "index.d.ts", "src/**/*"]
+  "include": ["index.d.ts", "src/**/*"]
 }

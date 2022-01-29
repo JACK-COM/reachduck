@@ -89,7 +89,7 @@ function getDecimals(parts: Intl.NumberFormatPart[], places = 2) {
     abbr = d.substring(0, places);
   } else if (fractions.length) abbr = fractions[0].value;
 
-  if (abbr.replaceAll("0", "") === "") return "";
+  if (abbr.replace(/0*/, "") === "") return "";
   return `.${abbr}`;
 }
 
