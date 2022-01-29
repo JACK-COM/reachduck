@@ -2,9 +2,11 @@
 .cache/
 coverage/
 dist/*
+lib/*
 !dist/index.html
 node_modules/
 *.log
+*.tgz
 
 # OS generated files
 .DS_Store

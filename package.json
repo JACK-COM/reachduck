@@ -1,22 +1,25 @@
 {
   "name": "@jackcom/reachduck",
-  "version": "0.0.6",
+  "version": "0.0.8",
   "description": "A front-end helper for your stdlib instance.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "files": [
-    "dist/*/**"
+    "lib/**/*"
   ],
   "keywords": [
     "reachduck",
     "@jackcom"
   ],
-  "author": "@jackcom",
+  "author": "JACKCOM",
   "license": "ISC",
   "scripts": {
-    "clean": "rm -rf dist/",
-    "build": "webpack --mode production",
-    "test": "jest --watchAll"
+    "bamp": "npm-auto-version && rm -rf package-lock.json node_modules/ && npm i",
+    "clean": "rm -rf dist/ lib/",
+    "build": "npm run clean && tsc",
+    "build:dev": "npm run clean && webpack --mode development",
+    "test": "jest --watchAll",
+    "prepublish": "tsc"
   },
   "publishConfig": {
     "access": "public"
@@ -30,6 +33,7 @@
     "copy-webpack-plugin": "^10.2.1",
     "crypto-browserify": "^3.12.0",
     "jest": "^27.4.7",
+    "npm-auto-version": "^1.0.0",
     "prettier": "^2.5.1",
     "stream-browserify": "^3.0.0",
     "ts-loader": "^9.2.6",
