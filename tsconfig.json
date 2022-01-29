@@ -1,27 +1,20 @@
 {
   "compilerOptions": {
-    "baseUrl": "src/",
-    "lib": ["ESNext", "DOM"],
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-
-    "outDir": "./dist/",
-    // "target": "es5"
-
     "allowJs": true,
     "downlevelIteration": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "commonjs",
+    "module": "esnext",
     "moduleResolution": "node",
-    "noEmit": false,
     "noImplicitAny": true,
+    "noEmit": false,
+    "declaration": true,
+    "useDefineForClassFields": true,
+    "declarationDir": "./dist/",
     "noImplicitReturns": true,
-    "skipLibCheck": true,
+    "outDir": "./dist/",
     "sourceMap": true,
     "strict": true,
-    "target": "ES2015",
-    "useDefineForClassFields": true
+    "target": "es5"
   },
-  "include": ["src", "index.d.ts"]
+  "include": ["./src/**/*"]
 }

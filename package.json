@@ -1,6 +1,6 @@
 {
   "name": "@jackcom/reachduck",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A front-end helper for your stdlib instance.",
   "main": "dist/index.js",
   "files": [
