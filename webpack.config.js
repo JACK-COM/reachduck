@@ -1,7 +1,7 @@
 const webpack = require("webpack");
 const path = require("path");
-const BundleAnalyzerPlugin =
-  require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
+// const BundleAnalyzerPlugin =
+//   require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 const config = {
@@ -17,19 +17,13 @@ const config = {
       export: "default",
       type: "umd",
     },
-    
-    path: path.resolve(__dirname, "dist"),
-    
+
+    path: path.resolve(__dirname, "lib"),
+
     filename: "index.js",
   },
 
-  plugins: [
-    new BundleAnalyzerPlugin({
-      analyzerMode: "static",
-      openAnalyzer: false,
-    }),
-    new CleanWebpackPlugin(),
-  ],
+  plugins: [new CleanWebpackPlugin()],
 
   module: {
     rules: [

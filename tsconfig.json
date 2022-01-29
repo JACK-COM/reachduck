@@ -2,19 +2,22 @@
   "compilerOptions": {
     "allowJs": true,
     "declaration": true,
+    "declarationMap": false,
     "downlevelIteration": true,
     "esModuleInterop": true,
-    "lib": ["ESNext", "DOM"],
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["es5", "dom", "es2015", "es2015.collection"],
     "module": "esnext",
     "moduleResolution": "node",
     "noEmit": false,
     "noImplicitAny": true,
     "noImplicitReturns": true,
-    "outDir": "./dist/",
-    "sourceMap": true,
+    "outDir": "./lib/",
+    "sourceMap": false,
     "strict": true,
     "target": "es5",
     "useDefineForClassFields": true
   },
-  "include": ["./src/**/*"]
+  "include": ["./src/**/*"],
+  "exclude": ["node_modules", "lib"]
 }
