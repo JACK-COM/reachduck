@@ -31,7 +31,7 @@ reachduck.isImageFile('path/to/some.mp4'); // false
 ```
 
 ## API
-The library contains a single `raphsduck` export. All methods listed below are available on this object.
+The library contains a single `reachduck` export. All methods listed below are available on this object.
 
 ### Working with Stdlib and chains
 ```typescript
