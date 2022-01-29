@@ -1,6 +1,6 @@
 import MyAlgoConnect from "@randlabs/myalgo-connect";
 import { formatAddress, tokenMetadata } from "../reachlib-api";
-import { ReachAccount } from "reach-types";
+import { ReachAccount } from "types";
 import { getAccount } from "./ALGO.indexer";
 import { disconnectWC, createWCClient } from "./ALGO.WalletConnect";
 
@@ -41,8 +41,8 @@ async function loadAssets(acc: ReachAccount) {
 
   if (assets.length) {
     const meta = assets.map((a: any) => tokenMetadata(a["asset-id"], acc));
-    updates.allAssets = await Promise.all(meta);
-  } else updates.allAssets = [];
+    updates.assets = await Promise.all(meta);
+  } else updates.assets = [];
 
   return updates;
 }

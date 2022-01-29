@@ -46,8 +46,8 @@ export function trimByteString(str: string): string {
  * @param {string} acct Account string
  * @returns {string}
  */
-export function truncateAccountString(acct: string): string {
+export function truncateAccountString(acct: string, radius = 6): string {
   const { length } = acct;
-  const start = acct.substr(0, 6);
-  return `${start}...${acct.substr(length - 6, length)}`;
+  const start = acct.substring(0, radius);
+  return `${start}...${acct.substring(length - radius, length)}`;
 }

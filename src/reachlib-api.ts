@@ -1,14 +1,11 @@
-import {
-  NetworkData,
-  ReachAccount,
-  ReachStdLib,
-  ReachToken,
-} from "./reach-types";
+import { NetworkData, ReachAccount, ReachStdLib, ReachToken } from "./types";
 import { loadInterface, ConnectorInterface } from "./networks/index.networks";
 import { trimByteString } from "./utils/helpers";
-import { NETWORKS, NETWORK_STORAGE_KEY, PROVIDERS } from "./constants";
+import { NETWORKS, PROVIDERS } from "./constants";
 
 /** `StdLib` instance */
+const NETWORK_STORAGE_KEY = "active-chain";
+const NETWORK_PROVIDER_KEY = "active-prov";
 let reach: ReachStdLib;
 let connectorInterface: ConnectorInterface;
 
@@ -57,13 +54,12 @@ export function formatCurrency(
     : reachFmt;
 }
 
-export function formatCurrencyShort(val: number) {
+export function formatCurrencyShort(val: number, decimalPlaces = 2) {
   // Generate a number abbreviation
   const numberAbbr = (grpCount: number) => {
     if (Number.isNaN(grpCount) || !grpCount) return "";
-    // This should actually return e1[N], but this is a stopgap
-    // because the reach library should have returned the raw formatted value
-    if (grpCount >= 4) return "∞";
+    // This should return e1[N]
+    if (grpCount >= 4) return "!";
 
     const abbrs = ["", "K", "M", "B", "T"];
     return abbrs[grpCount];
@@ -73,16 +69,38 @@ export function formatCurrencyShort(val: number) {
   const groups = parts.filter((p) => p.type === "group").length;
   const int = parts[0].value;
   // Note: can dig into parts to generate decimals (e.g. 10.1K)
-  return `${int}${numberAbbr(groups)}`;
+  return `${int}${getDecimals(parts, decimalPlaces)}${numberAbbr(groups)}`;
 }
 
+function getDecimals(parts: Intl.NumberFormatPart[], places = 2) {
+  if (!places) return "";
+
+  const ints: Intl.NumberFormatPart[] = [];
+  const fractions: Intl.NumberFormatPart[] = [];
+  parts.forEach((part) => {
+    const { type } = part;
+    if (type === "integer") ints.push(part);
+    else if (type === "fraction") fractions.push(part);
+  });
+
+  let abbr = "";
+  if (ints.length > 1) {
+    const d = ints[1].value;
+    abbr = d.substring(0, places);
+  } else if (fractions.length) abbr = fractions[0].value;
+
+  if (abbr.replaceAll("0", "") === "") return "";
+  return `.${abbr}`;
+}
+
+/** Convert `val` to atomic units for the current network */
 export function parseCurrency(val: any, dec?: number) {
   const { connector, parseCurrency: parse } = createReachAPI();
   const decimals = isNaN(Number(dec)) ? NETWORKS[connector].decimals || 0 : dec;
   return parse(val, decimals);
 }
 
-/** Asynchronously update Listings cache */
+/** Optionally opt-in in to assets */
 export async function inlineAssetOptIn(acc: ReachAccount, tokenId: any) {
   if (await acc.tokenAccepted(tokenId)) return true;
 
@@ -92,6 +110,7 @@ export async function inlineAssetOptIn(acc: ReachAccount, tokenId: any) {
     .catch(() => false);
 }
 
+/** Format address for `networkAccount` instance */
 export function formatAddress(acc: ReachAccount) {
   return createReachAPI().formatAddress(acc.getAddress());
 }
@@ -130,9 +149,18 @@ export function listSupportedNetworks(): NetworkData[] {
   }));
 }
 
-/** Determine whether app should run on `MainNet` or `TestNet` */
+/** Determine whether app is running on `MainNet` or `TestNet` (default) */
 export function getNetworkProvider() {
-  return PROVIDERS.TESTNET;
+  return (
+    localStorage.getItem(NETWORK_PROVIDER_KEY) ||
+    setNetworkProvider(PROVIDERS.TESTNET)
+  );
+}
+
+/** Set network provider preference `MainNet` or `TestNet` */
+export function setNetworkProvider(prov: "MainNet" | "TestNet") {
+  localStorage.setItem(NETWORK_PROVIDER_KEY, prov);
+  return prov;
 }
 
 /**

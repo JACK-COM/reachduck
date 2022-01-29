@@ -1,13 +1,23 @@
+/**
+ * @file INDEX
+ * Main/lib entry point
+ */
+
 import * as constants from "./constants";
 import * as utils from "./utils/helpers";
 import * as account from "./account";
 import * as reachlib from "./reachlib-api";
 
-const reachducks = {
+export * from "./constants";
+export * from "./utils/helpers";
+export * from "./account";
+export * from "./reachlib-api";
+
+const reachduck = {
   ...constants,
   ...utils,
   ...account,
   ...reachlib,
 };
 
-export default reachducks;
+export default reachduck;

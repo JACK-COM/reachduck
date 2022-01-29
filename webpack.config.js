@@ -9,11 +9,11 @@ const config = {
     index: "./src/index.ts",
   },
 
-  devtool: process.env === 'development' && 'cheap-module-source-map',
+  devtool: process.env === "development" && "cheap-module-source-map",
 
   output: {
     library: {
-      name: "reachducks",
+      name: "reachduck",
       export: "default",
       type: "umd",
     },
@@ -49,6 +49,7 @@ const config = {
 
   optimization: {
     runtimeChunk: false,
+    minimize: process.env === "production",
   },
 };
 

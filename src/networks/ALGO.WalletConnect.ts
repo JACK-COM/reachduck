@@ -4,28 +4,17 @@ import QRCodeModal from "algorand-walletconnect-qrcode-modal";
 
 const WCState = createState({
   connected: false,
-  client: null as null | ALGOWCCLient,
+  client: null as null | WalletConnect,
 });
 
+let connected: Signal;
+
 export function createWCClient() {
-  const newClient = new ALGOWCCLient();
-  WCState.client(newClient);
-  return newClient;
+  connected = new Signal();
+  return { getAddr, signTxns };
 }
 
-export function getWCClient() {
-  const { client } = WCState.getState();
-  return client;
-}
-
-export function disconnectWC() {
-  const { client } = WCState.getState();
-  if (!client) return;
-  client.wc.killSession();
-  WCState.reset();
-}
-
-export class Signal {
+class Signal {
   p: Promise<boolean>;
   r: (a: boolean) => void;
 
@@ -39,79 +28,70 @@ export class Signal {
       me.r = resolve;
     });
   }
+
   wait() {
     return this.p;
   }
+
   notify() {
     this.r(true);
   }
 }
 
-export class ALGOWCCLient {
-  wc: any;
-  connected: Signal;
+export function disconnectWC() {
+  const { client } = WCState.getState();
+  if (client) client.killSession();
+  connected = new Signal();
+  WCState.reset();
+}
 
-  constructor() {
-    console.log(`AWC ctor`);
-    this.wc = false;
-    this.connected = new Signal();
-  }
+const onConnect = (err: any, _payload: any) => {
+  if (err) throw err;
+  connected.notify();
+};
 
-  async ensureWC() {
-    console.log(`AWC ensureWC`);
-    if (this.wc) {
-      return;
-    }
-    this.wc = new WalletConnect({
+async function ensureWC() {
+  const { client } = WCState.getState();
+  if (!client) {
+    const newclient = new WalletConnect({
       bridge: "https://bridge.walletconnect.org",
       qrcodeModal: QRCodeModal,
     });
-    const me = this;
-    const onConnect = (err: any, payload: any) => {
-      console.log(`AWC onConnect`, { err, payload });
-      if (err) {
-        throw err;
-      }
-      me.connected.notify();
-    };
-    this.wc.on("session_update", onConnect);
-    this.wc.on("connect", onConnect);
-    console.log(`AWC ensureWC`, { me });
+    newclient.on("session_update", onConnect);
+    newclient.on("connect", onConnect);
+    WCState.client(newclient);
   }
+}
 
-  async ensureSession() {
-    await this.ensureWC();
-    if (!this.wc.connected) {
-      console.log(`AWC createSession`);
-      await this.wc.createSession();
-    } else {
-      console.log(`AWC session exists`);
-      this.connected.notify();
-    }
+async function ensureSession() {
+  await ensureWC();
+  const { client } = WCState.getState();
+  if (!client?.connected) {
+    await client?.createSession();
+  } else {
+    connected.notify();
   }
+}
 
-  async getAddr(): Promise<string> {
-    await this.ensureSession();
-    await this.connected.wait();
-    const accts = this.wc.accounts;
-    console.log(`AWC getAddr`, accts);
-    return accts[0];
-  }
+async function getAddr(): Promise<string> {
+  await ensureSession();
+  await connected.wait();
+  const { client } = WCState.getState();
+  const accts = client?.accounts || [""];
+  return accts[0];
+}
 
-  async signTxns(txns: string[]): Promise<string[]> {
-    await this.ensureSession();
-    const req = {
-      method: "algo_signTxn",
-      params: [txns.map((txn) => ({ txn }))],
-    };
-    console.log(`AWC signTxns ->`, req);
-    try {
-      const res = await this.wc.sendCustomRequest(req);
-      console.log(`AWC signTxns <-`, res);
-      return res;
-    } catch (e: any) {
-      console.log(`AWC signTxns err`, e);
-      throw e;
-    }
+async function signTxns(txns: string[]): Promise<string[]> {
+  await ensureSession();
+  const req = {
+    method: "algo_signTxn",
+    params: [txns.map((txn) => ({ txn }))],
+  };
+
+  try {
+    const { client } = WCState.getState();
+    return await client?.sendCustomRequest(req);
+  } catch (e: any) {
+    throw e;
   }
 }

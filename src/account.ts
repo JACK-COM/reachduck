@@ -1,4 +1,9 @@
-import { ReachAccount } from "./reach-types";
+/**
+ * @file ACCOUNTS
+ * Account-related actions (connect/disconnect etc)
+ */
+
+import { ReachAccount } from "./types";
 import {
   createReachAPI,
   createConnectorAPI,
@@ -86,7 +91,6 @@ export type ConnectedUserData = {
   account: ReachAccount;
   address: string;
   balance: string;
-  loading: boolean;
 } & Record<string, any>;
 
 /** HELPER | Restart user session */
@@ -106,7 +110,6 @@ async function hydrateUser(account: ReachAccount): Promise<ConnectedUserData> {
     account,
     address,
     balance: formatCurrency(bigBal),
-    loading: false,
     ...assetUpdates,
   };
 }
