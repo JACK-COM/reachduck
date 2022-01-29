@@ -138,11 +138,18 @@ export type ReachStdLib = {
     sym: string,
     opts?: any
   ) => any;
-  /* formatWithDecimals: (
-    atomicUnitAmount: number,
-    tokenDecimals: number
-  ) => string; */
+  // formatWithDecimals: (atomicUnits: number, tokenDecimals?: number) => string;
   parseCurrency: (amt: any, decimals?: number) => any;
+  /**
+   * @version 0.1.8-rc-6
+   * - Allows for the installation of a custom hook to observe signing requests. */
+  // setSigningMonitor(
+  //   h: (evt: any, pre: Promise<any>, post: Promise<any>) => void
+  // ): void;
+  /**
+   * @version 0.1.8-rc-6
+   * - Make http requests at least `ms` milliseconds apart. Not supported on all networks */
+  // setMinMillisBetweenRequests(ms: number): void;
   // bigNumberToNumber: (amt: any) => number;
 };
 
