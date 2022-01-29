@@ -1,8 +1,9 @@
 {
   "name": "@jackcom/reachduck",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A front-end helper for your stdlib instance.",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist/*/**"
   ],
@@ -19,6 +20,10 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JACK-COM/reachduck.git"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^4.0.0",
