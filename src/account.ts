@@ -1,8 +1,3 @@
-/**
- * @file ACCOUNTS
- * Account-related actions (connect/disconnect etc)
- */
-
 import { ReachAccount } from "./types";
 import {
   createReachAPI,

@@ -1,9 +1,5 @@
 /* eslint-disable no-console */
-/**
- * @file Algorand Indexer
- * ----------------
- * Search for transactions and/or asset details
- */
+
 import { Indexer } from "algosdk";
 
 type TxnSearchOpts = {

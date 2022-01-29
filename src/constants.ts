@@ -1,8 +1,3 @@
-/**
- * @file CONSTANTS
- * Shared constants
- */
-
 import { NetworkData } from "./types";
 
 export const PROVIDERS: { [x: string]: "TestNet" | "MainNet" } = {
