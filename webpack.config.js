@@ -17,8 +17,10 @@ const config = {
       export: "default",
       type: "umd",
     },
+    
     path: path.resolve(__dirname, "dist"),
-    filename: "[name].js",
+    
+    filename: "index.js",
   },
 
   plugins: [
