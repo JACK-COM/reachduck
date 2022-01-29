@@ -1,6 +1,6 @@
 {
   "name": "@jackcom/reachduck",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A front-end helper for your stdlib instance.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -14,10 +14,11 @@
   "author": "@jackcom",
   "license": "ISC",
   "scripts": {
+    "bamp": "npm-auto-version",
     "clean": "rm -rf dist/ lib/",
     "build": "npm run clean && webpack --mode production",
     "test": "jest --watchAll",
-    "prepublish": "npm-auto-version && tsc"
+    "prepublish": "tsc"
   },
   "publishConfig": {
     "access": "public"
