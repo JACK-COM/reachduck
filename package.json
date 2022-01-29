@@ -1,6 +1,6 @@
 {
   "name": "@jackcom/reachduck",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A front-end helper for your stdlib instance.",
   "main": "dist/index.js",
   "files": [
@@ -21,6 +21,8 @@
     "access": "public"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-typescript": "^7.16.7",
     "@reach-sh/stdlib": "^0.1.8-rc.5",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^10.2.1",

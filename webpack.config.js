@@ -46,11 +46,6 @@ const config = {
       stream: require.resolve("stream-browserify"),
     },
   },
-
-  optimization: {
-    runtimeChunk: false,
-    minimize: process.env === "production",
-  },
 };
 
 module.exports = config;
