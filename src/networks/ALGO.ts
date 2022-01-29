@@ -1,6 +1,6 @@
 import MyAlgoConnect from "@randlabs/myalgo-connect";
 import { formatAddress, tokenMetadata } from "../reachlib-api";
-import { ReachAccount } from "types";
+import { ReachAccount } from "../types";
 import { getAccount } from "./ALGO.indexer";
 import { disconnectWC, createWCClient } from "./ALGO.WalletConnect";
 
