@@ -8,11 +8,6 @@ import * as utils from "./utils/helpers";
 import * as account from "./account";
 import * as reachlib from "./reachlib-api";
 
-export * from "./constants";
-export * from "./utils/helpers";
-export * from "./account";
-export * from "./reachlib-api";
-
 const reachduck = {
   ...constants,
   ...utils,
