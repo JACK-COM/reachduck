@@ -1,12 +1,18 @@
 import MyAlgoConnect from "@randlabs/myalgo-connect";
 import { formatAddress, tokenMetadata } from "../reachlib-api";
-import { ReachAccount } from "../types";
+import {
+  NetworkProvider,
+  ConnectorInterface,
+  ReachAccount,
+  ReachStdLib,
+} from "../types";
 import { getAccount } from "./ALGO.indexer";
 import { disconnectWC, createWCClient } from "./ALGO.WalletConnect";
 
-export const AlgoInterface = {
+export const AlgoInterface: ConnectorInterface = {
   disconnectUser: disconnectWC,
   fetchAccount,
+  getProviderEnv,
   getWalletConnectClientOpts: () => ({
     WalletConnect: function () {
       return createWCClient();
@@ -22,6 +28,17 @@ const emptyAcct = { assets: [], "created-apps": [] };
 async function fetchAccount(address: string): Promise<any> {
   const { account } = await getAccount(address);
   return account;
+}
+
+function getProviderEnv(
+  stdlib: ReachStdLib,
+  network: NetworkProvider = "TestNet"
+) {
+  const pe = stdlib.providerEnvByName("ALGO");
+  const networks: NetworkProvider[] = ["TestNet", "MainNet", "BetaNet"];
+  const net = networks.includes(network) ? network : "TestNet";
+  pe.ALGO_INDEXER_SERVER = `https://algoindexer.${net}.algoexplorerapi.io`;
+  return pe;
 }
 
 function fallbackAcct(e: any) {
