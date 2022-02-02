@@ -1,5 +1,59 @@
+export type APIFn<T extends BackendModule> = {
+  [fn in keyof T]: (...args: any[]) => Promise<any>;
+} & {
+  [fnGroup in keyof T]: CtcLabeledFunc<any>;
+};
+
+export type BackendModule = Record<string, any>;
+
 /** Reach StdLib instance */
-type BigNumber = any;
+export type BigNumber = any;
+
+/** Interface for blockchain-specific helpers */
+export type ConnectorInterface = {
+  /** Clear any user session details (usually for `WalletConnect`) */
+  disconnectUser(): void;
+  /** Fetch account details from network */
+  fetchAccount(acc: string | any): any | Promise<any>;
+  /** Returns a blockchain-specific configuration for `stdlib` */
+  getProviderEnv(stdlib: ReachStdLib, network?: string): void;
+  /** Fetch account assets from network */
+  loadAssets(acc: string | any): any | Promise<any>;
+  /** Get a `WalletConnect` client instance */
+  getWalletConnectClientOpts(): any;
+  /**
+   * Get an object with a key containing a wallet fallback for `stdlib`.
+   * Defaults to `MyAlgoConnect`
+   */
+  getWebWalletClientOpts(): any;
+};
+
+/** Reach Contract `API` Function(s) */
+export type CtcFn = { (...args: any[]): any | Promise<any> };
+
+/** Reach Contract `View` member */
+export type CtcLabeledFunc<T extends any> =
+  | CtcFnGroup<T>
+  | { [fnName: string]: CtcFn };
+
+/** Reach Contract Method (function) grouping */
+export type CtcFnGroup<T> = {
+  [k in keyof T]: CtcFn;
+};
+
+export type InteractFn<T extends BackendModule> = {
+  [fn in keyof T]: (interact: any, ctcInfo?: string | number) => any;
+};
+
+/** `NetworkData` describes single network data-item (for e.g. Ethereum) */
+export type NetworkData = {
+  name: string;
+  abbr: string;
+  active?: boolean;
+  decimals?: number;
+};
+
+export type NetworkProvider = string | ("MainNet" | "TestNet" | "BetaNet");
 
 export type ReachToken = {
   id: number | string;
@@ -32,18 +86,6 @@ export type ReachAccount = { [x: string]: any } & {
   tokenMetadata(tokenId: string | number): Promise<{ [x: string]: any }>;
   stdlib: ReachStdLib;
 };
-
-type APIFn<T extends BackendModule> = {
-  [fn in keyof T]: (...args: any[]) => Promise<any>;
-} & {
-  [fnGroup in keyof T]: CtcLabeledFunc<any>;
-};
-
-type InteractFn<T extends BackendModule> = {
-  [fn in keyof T]: (interact: any, ctcInfo?: string | number) => any;
-};
-
-export type BackendModule = Record<string, any>;
 
 export type ReachContract<T extends BackendModule> = {
   /** Get contract address */
@@ -84,17 +126,8 @@ export type ReachEventStream = {
   };
 };
 
-/** `NetworkData` describes single network data-item (for e.g. Ethereum) */
-export type NetworkData = {
-  name: string;
-  abbr: string;
-  active?: boolean;
-  decimals?: number;
-};
-
 /** StdLib Helper Interface */
 export type ReachStdLib = {
-  [x: string]: any;
   connector: string;
   hasRandom: { random: () => BigNumber };
   hasConsoleLogger: { log: (...a: any) => void };
@@ -138,30 +171,17 @@ export type ReachStdLib = {
     sym: string,
     opts?: any
   ) => any;
-  // formatWithDecimals: (atomicUnits: number, tokenDecimals?: number) => string;
+  formatWithDecimals: (atomicUnits: number, tokenDecimals?: number) => string;
   parseCurrency: (amt: any, decimals?: number) => any;
   /**
    * @version 0.1.8-rc-6
    * - Allows for the installation of a custom hook to observe signing requests. */
-  // setSigningMonitor(
-  //   h: (evt: any, pre: Promise<any>, post: Promise<any>) => void
-  // ): void;
+  setSigningMonitor(
+    h: (evt: any, pre: Promise<any>, post: Promise<any>) => void
+  ): void;
   /**
    * @version 0.1.8-rc-6
    * - Make http requests at least `ms` milliseconds apart. Not supported on all networks */
-  // setMinMillisBetweenRequests(ms: number): void;
+  setMinMillisBetweenRequests(ms: number): void;
   // bigNumberToNumber: (amt: any) => number;
-};
-
-/** Reach Contract `API` Function(s) */
-export type CtcFn = { (...args: any[]): any | Promise<any> };
-
-/** Reach Contract `View` member */
-export type CtcLabeledFunc<T extends any> =
-  | CtcFnGroup<T>
-  | { [fnName: string]: CtcFn };
-
-/** Reach Contract Method (function) grouping */
-export type CtcFnGroup<T> = {
-  [k in keyof T]: CtcFn;
-};
+} & { [x: string]: any };
