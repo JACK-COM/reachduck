@@ -1,17 +1,22 @@
-import { ReachStdLib, ConnectorInterface } from "../types";
+import { ConnectorInterface } from "../types";
 import { noOp } from "../utils/helpers";
 import { AlgoInterface } from "./ALGO";
 
 type Connector = string;
+const returnList = () => [];
 
 const DEFAULT_INTERFACE: ConnectorInterface = {
   disconnectUser: noOp,
   fetchAccount: noOp,
+  fetchAssetById: noOp,
   getProviderEnv: noOp,
   getWalletConnectClientOpts: noOp,
   getWebWalletClientOpts: noOp,
   loadAssets: noOp,
+  searchAssetsByName: returnList,
+  searchForTransactions: returnList,
 };
+
 const CHAINS: Record<Connector, ConnectorInterface> = {
   ALGO: AlgoInterface,
 };

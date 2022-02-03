@@ -15,17 +15,23 @@ export type ConnectorInterface = {
   disconnectUser(): void;
   /** Fetch account details from network */
   fetchAccount(acc: string | any): any | Promise<any>;
+  /** Fetch an asset/token by its ID from the chain's block explorer */
   /** Returns a blockchain-specific configuration for `stdlib` */
   getProviderEnv(stdlib: ReachStdLib, network?: string): void;
   /** Fetch account assets from network */
-  loadAssets(acc: string | any): any | Promise<any>;
+  loadAssets(acc: string | any): any | Promise<ReachToken[]>;
   /** Get a `WalletConnect` client instance */
   getWalletConnectClientOpts(): any;
   /**
    * Get an object with a key containing a wallet fallback for `stdlib`.
-   * Defaults to `MyAlgoConnect`
+   * Defaults to `MyAlgoConnect` on Algorand.
    */
   getWebWalletClientOpts(): any;
+  fetchAssetById(assetId: number): any;
+  /** Search for an asset/token by its name. Returns a list of results */
+  searchAssetsByName(assetName: string): any;
+  /** Search for transactions for this `addr` */
+  searchForTransactions(addr: string, opts?: any): any;
 };
 
 /** Reach Contract `API` Function(s) */

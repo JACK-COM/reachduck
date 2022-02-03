@@ -6,27 +6,31 @@ import {
   ReachAccount,
   ReachStdLib,
 } from "../types";
-import { getAccount } from "./ALGO.indexer";
+import {
+  fetchAccount,
+  searchForTransactions,
+  fetchAssetById,
+  searchAssetsByName,
+} from "./ALGO.indexer";
 import { disconnectWC, createWCClient } from "./ALGO.WalletConnect";
 
 export const AlgoInterface: ConnectorInterface = {
   disconnectUser: disconnectWC,
-  fetchAccount,
+  fetchAccount: getAccount,
+  fetchAssetById,
+  searchAssetsByName,
   getProviderEnv,
-  getWalletConnectClientOpts: () => ({
-    WalletConnect: function () {
-      return createWCClient();
-    },
-  }),
+  getWalletConnectClientOpts,
   getWebWalletClientOpts,
   loadAssets,
+  searchForTransactions,
 };
 
 const emptyAcct = { assets: [], "created-apps": [] };
 
 /** Fetch account details (assets) */
-async function fetchAccount(address: string): Promise<any> {
-  const { account } = await getAccount(address);
+async function getAccount(address: string): Promise<any> {
+  const { account } = await fetchAccount(address);
   return account;
 }
 
@@ -62,6 +66,14 @@ async function loadAssets(acc: ReachAccount) {
   } else updates.assets = [];
 
   return updates;
+}
+
+function getWalletConnectClientOpts() {
+  return {
+    WalletConnect: function () {
+      return createWCClient();
+    },
+  };
 }
 
 /** Enable `MyAlgoConnect` use by stdlib */
