@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import { Indexer } from "algosdk";
 
 type TxnSearchOpts = {
@@ -29,6 +27,51 @@ export function useIndexerClient(): Indexer {
 }
 
 /**
+ * Lookup an Algorand account by its address
+ * @param addr Account address
+ * @returns Algorand account information
+ */
+export async function fetchAccount(addr: string) {
+  const Indexer = useIndexerClient();
+  const result: typeof emptyAcct = await Indexer.lookupAccountByID(addr)
+    .do()
+    .catch(() => ({ ...emptyAcct }));
+  return result;
+}
+
+/**
+ * Get asset given its `id`
+ * @param assetId Asset id
+ * @returns Asset object
+ */
+export async function fetchAssetById(
+  assetId: number
+): Promise<Record<string, any>> {
+  try {
+    const Indexer = useIndexerClient();
+    const data = await Indexer.lookupAssetByID(assetId).do();
+    return formatAssetMetadata(data?.asset);
+  } catch (error: any) {
+    return {};
+  }
+}
+
+/**
+ * Search for assets called `assetName`
+ * @param name Name target
+ * @returns List of assets roughly matching name
+ */
+export async function searchAssetsByName(name: string): Promise<any[]> {
+  try {
+    const Indexer = useIndexerClient();
+    const assetInfo = await Indexer.searchForAssets().name(name).do();
+    return assetInfo?.assets;
+  } catch (error) {
+    return [];
+  }
+}
+
+/**
  * Search for transactions for `addr`
  * @param addr Account address
  * @param opts Additional search params
@@ -40,14 +83,13 @@ export function useIndexerClient(): Indexer {
 export async function searchForTransactions(
   addr: string,
   opts: TxnSearchOpts = {}
-) {
+): Promise<any> {
   try {
     const Indexer = useIndexerClient();
     const { amount, minRound, note } = opts;
     let searchQuery = Indexer.searchForTransactions().address(addr);
 
     if (note) {
-      console.log("searching for addr and note", addr, note);
       const enc = new TextEncoder();
       const noteenc = enc.encode(note);
       searchQuery = searchQuery.notePrefix(noteenc);
@@ -66,37 +108,7 @@ export async function searchForTransactions(
     const searchResults = await searchQuery.do();
     return searchResults;
   } catch (error) {
-    return error;
-  }
-}
-
-/**
- * Lookup an Algorand account by its address
- * @param addr Account address
- * @returns Algorand account information
- */
-export async function getAccount(addr: string) {
-  const Indexer = useIndexerClient();
-  const result: typeof emptyAcct = await Indexer.lookupAccountByID(addr)
-    .do()
-    .catch(() => ({ ...emptyAcct }));
-  return result;
-}
-
-/**
- * Get asset given its `id`
- * @param assetId Asset id
- * @returns Asset object
- */
-export async function getAssetById(
-  assetId: number
-): Promise<Record<string, any>> {
-  try {
-    const Indexer = useIndexerClient();
-    const data = await Indexer.lookupAssetByID(assetId).do();
-    return formatAssetMetadata(data?.asset);
-  } catch (error: any) {
-    return {};
+    return [];
   }
 }
 
@@ -116,21 +128,6 @@ function formatAssetMetadata(asset: any = { params: {} }) {
     symbol: params.symbol || `#${id}`,
     supply: params.total,
     url: params.url,
+    verified: params.verified || false
   };
-}
-
-/**
- * Search for assets called `assetName`
- * @param assetName Name target
- * @returns List of assets roughly matching name
- */
-export async function getAssetsByName(assetName: string) {
-  try {
-    const Indexer = useIndexerClient();
-    const assetInfo = await Indexer.searchForAssets().name(assetName).do();
-    console.log("assetInfo", assetInfo);
-    return assetInfo?.assets;
-  } catch (error) {
-    return error;
-  }
 }
