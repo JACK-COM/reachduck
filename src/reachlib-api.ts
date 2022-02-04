@@ -50,10 +50,8 @@ export function formatCurrencyShort(val: number, decimalPlaces = 2) {
   // Generate a number abbreviation
   const numberAbbr = (grpCount: number) => {
     if (Number.isNaN(grpCount) || !grpCount) return "";
-    // This should return e1[N]
-    if (grpCount >= 4) return "!";
-
-    const abbrs = ["", "K", "M", "B", "T"];
+    const abbrs = ["", "K", "M", "B", "T", "Qa", "Qi", "Si", "Se"];
+    if (grpCount >= abbrs.length) return "!";
     return abbrs[grpCount];
   };
 
@@ -249,5 +247,5 @@ function getDecimals(parts: Intl.NumberFormatPart[], places = 2) {
   } else if (fractions.length) abbr = fractions[0].value;
 
   if (abbr.replace(/0*/, "") === "") return "";
-  return `.${abbr}`;
+  return `.${abbr.replace(/0$/, "")}`;
 }
