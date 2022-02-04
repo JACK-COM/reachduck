@@ -2,7 +2,16 @@ export const noOp = () => null;
 
 /** Copy `val` to user's keyboard */
 export async function copyToClipboard(val: string) {
-  return navigator.clipboard.writeText(val);
+  return navigator?.clipboard?.writeText(val);
+}
+
+/** App Migration helper: check if your app version has changed */
+export async function checkVersionChanged(
+  currentVersion: string | number,
+  APP_VERSION_KEY = "app-version"
+) {
+  const lastVersion = localStorage.getItem(APP_VERSION_KEY);
+  return currentVersion !== lastVersion;
 }
 
 /**
