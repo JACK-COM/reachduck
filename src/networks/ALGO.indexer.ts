@@ -1,4 +1,5 @@
 import { Indexer } from "algosdk";
+import { ReachToken } from "../types";
 
 type TxnSearchOpts = {
   amount?: number;
@@ -35,8 +36,13 @@ export async function fetchAccount(addr: string) {
   const Indexer = useIndexerClient();
   const result: typeof emptyAcct = await Indexer.lookupAccountByID(addr)
     .do()
-    .catch(() => ({ ...emptyAcct }));
-  return result;
+    .catch(fallbackAcct);
+  return result.account;
+}
+
+function fallbackAcct(e: any) {
+  console.warn("Could not fetch ALGO account", e);
+  return { account: emptyAcct };
 }
 
 /**
@@ -45,14 +51,15 @@ export async function fetchAccount(addr: string) {
  * @returns Asset object
  */
 export async function fetchAssetById(
-  assetId: number
-): Promise<Record<string, any>> {
+  assetId: number,
+  balance = 0
+): Promise<ReachToken> {
   try {
     const Indexer = useIndexerClient();
     const data = await Indexer.lookupAssetByID(assetId).do();
-    return formatAssetMetadata(data?.asset);
+    return formatAssetMetadata(data?.asset, balance);
   } catch (error: any) {
-    return {};
+    return {} as ReachToken;
   }
 }
 
@@ -117,17 +124,20 @@ export async function searchForTransactions(
  * @param assetName Name target
  * @returns List of assets roughly matching name
  */
-function formatAssetMetadata(asset: any = { params: {} }) {
+function formatAssetMetadata(
+  asset: any = { params: {} },
+  amount: number
+): ReachToken {
   const { index: id, params } = asset;
 
   return {
     id,
-    amount: 0,
+    amount,
     decimals: params.decimals,
     name: params.name || `Asset #${id}`,
     symbol: params.symbol || `#${id}`,
     supply: params.total,
     url: params.url,
-    verified: params.verified || false
+    verified: params.verified || false,
   };
 }

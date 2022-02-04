@@ -218,6 +218,7 @@ function formatTokenMetadata(
     amount: shrink(amount),
     supply: shrink(data.supply),
     decimals: shrink(data.decimals),
+    verified: data.verified || false,
   };
 }
 

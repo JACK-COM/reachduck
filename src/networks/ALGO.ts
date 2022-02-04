@@ -68,15 +68,10 @@ function getProviderEnv(
   return reach.providerEnvByName(net) || defaultProviderEnv(net);
 }
 
-function fallbackAcct(e: any) {
-  console.warn("Could not fetch account", e);
-  return emptyAcct;
-}
-
 /** Load account assets */
 async function loadAssets(acc: ReachAccount) {
-  const res = await fetchAccount(formatAddress(acc)).catch(fallbackAcct);
-  const { assets = [], "created-apps": apps = [] } = res || emptyAcct;
+  const res = await fetchAccount(formatAddress(acc));
+  const { assets = [], "created-apps": apps = [] } = res;
   const { length } = apps;
   const appsCount: any = { length };
   const plural = appsCount.length === 1 ? "app" : "apps";
@@ -84,7 +79,9 @@ async function loadAssets(acc: ReachAccount) {
   const updates: any = { appsCount };
 
   if (assets.length) {
-    const meta = assets.map((a: any) => tokenMetadata(a["asset-id"], acc));
+    const meta = assets.map((a: any) =>
+      fetchAssetById(a["asset-id"], a.amount)
+    );
     updates.assets = await Promise.all(meta);
   } else updates.assets = [];
 

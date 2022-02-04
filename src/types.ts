@@ -66,11 +66,12 @@ export type NetworkProvider = string | ("MainNet" | "TestNet" | "BetaNet");
 export type ReachToken = {
   id: number | string;
   name: string;
+  amount?: number | any;
+  decimals: number;
+  supply: string | number;
   symbol: string;
   url: string;
-  amount?: number | any;
-  supply: string | number;
-  decimals: number;
+  verified?: boolean;
 };
 
 /** A reach-connected Network Account representation */
