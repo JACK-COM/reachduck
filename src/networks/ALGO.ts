@@ -14,6 +14,7 @@ import {
 } from "./ALGO.indexer";
 import { disconnectWC, createWCClient } from "./ALGO.WalletConnect";
 
+export type ProviderEnv = { REACH_ISOLATED_NETWORK?: string };
 export type AlgoProviderEnv = Partial<{
   ALGO_INDEXER_PORT: string;
   ALGO_INDEXER_SERVER: string;
@@ -22,7 +23,8 @@ export type AlgoProviderEnv = Partial<{
   ALGO_PORT: string;
   ALGO_SERVER: string;
   ALGO_TOKEN: string;
-}>;
+}> &
+  ProviderEnv;
 
 export const AlgoInterface: ConnectorInterface = {
   disconnectUser: disconnectWC,
@@ -44,15 +46,26 @@ async function getAccount(address: string): Promise<any> {
   return account;
 }
 
+const TK = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+const defaultProviderEnv = (n: NetworkProvider) => {
+  const networks: NetworkProvider[] = ["TestNet", "BetaNet", "MainNet"];
+  const net = (networks.includes(n) ? n : networks[0]).toLowerCase();
+  return {
+    ALGO_SERVER: "https://node.testnet.algoexplorerapi.io",
+    ALGO_PORT: "",
+    ALGO_TOKEN: TK,
+    ALGO_INDEXER_SERVER: `https://algoindexer.${net}.algoexplorerapi.io`,
+    ALGO_INDEXER_PORT: "",
+    ALGO_INDEXER_TOKEN: TK,
+    REACH_ISOLATED_NETWORK: "no",
+  };
+};
+
 function getProviderEnv(
-  stdlib: ReachStdLib,
-  network: NetworkProvider = "TestNet"
+  reach: ReachStdLib,
+  net: NetworkProvider = "TestNet"
 ): AlgoProviderEnv {
-  const pe = stdlib.providerEnvByName("ALGO");
-  const networks: NetworkProvider[] = ["TestNet", "MainNet", "BetaNet"];
-  const net = networks.includes(network) ? network.toLowerCase() : "TestNet";
-  pe.ALGO_INDEXER_SERVER = `https://algoindexer.${net}.algoexplorerapi.io`;
-  return pe;
+  return reach.providerEnvByName(net) || defaultProviderEnv(net);
 }
 
 function fallbackAcct(e: any) {
