@@ -6,7 +6,7 @@ export async function copyToClipboard(val: string) {
 }
 
 /** App Migration helper: check if your app version has changed */
-export async function checkVersionChanged(
+export function checkVersionChanged(
   currentVersion: string | number,
   APP_VERSION_KEY = "app-version"
 ) {

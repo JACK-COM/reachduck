@@ -14,6 +14,16 @@ import {
 } from "./ALGO.indexer";
 import { disconnectWC, createWCClient } from "./ALGO.WalletConnect";
 
+export type AlgoProviderEnv = Partial<{
+  ALGO_INDEXER_PORT: string;
+  ALGO_INDEXER_SERVER: string;
+  ALGO_INDEXER_TOKEN: string;
+  ALGO_NODE_WRITE_ONLY: string;
+  ALGO_PORT: string;
+  ALGO_SERVER: string;
+  ALGO_TOKEN: string;
+}>;
+
 export const AlgoInterface: ConnectorInterface = {
   disconnectUser: disconnectWC,
   fetchAccount: getAccount,
@@ -37,10 +47,10 @@ async function getAccount(address: string): Promise<any> {
 function getProviderEnv(
   stdlib: ReachStdLib,
   network: NetworkProvider = "TestNet"
-) {
+): AlgoProviderEnv {
   const pe = stdlib.providerEnvByName("ALGO");
   const networks: NetworkProvider[] = ["TestNet", "MainNet", "BetaNet"];
-  const net = networks.includes(network) ? network : "TestNet";
+  const net = networks.includes(network) ? network.toLowerCase() : "TestNet";
   pe.ALGO_INDEXER_SERVER = `https://algoindexer.${net}.algoexplorerapi.io`;
   return pe;
 }

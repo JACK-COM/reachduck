@@ -1,15 +1,21 @@
-import { ReachAccount } from "./types";
+import { ReachAccount, LibFallbackOpts } from "./types";
 import {
   createReachAPI,
   createConnectorAPI,
   formatCurrency,
-  getProviderEnv,
 } from "./reachlib-api";
 
+/** Returns Configured Provider Environment (with e.g. AlgoIndexer and
+ * AlgoDaemon urls etc) */
+const getProviderEnv = () => {
+  const chain = createConnectorAPI();
+  return chain.getProviderEnv(createReachAPI());
+};
+
 /** Configure stdlib wallet fallback */
-function setLibFallback(opts: any) {
+function setLibFallback(opts: LibFallbackOpts) {
   const { walletFallback, setWalletFallback } = createReachAPI();
-  const providerEnv = getProviderEnv();
+  const providerEnv = opts.providerEnv || getProviderEnv();
 
   setWalletFallback(walletFallback({ ...opts, providerEnv }));
 }
