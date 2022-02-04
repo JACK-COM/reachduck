@@ -1,6 +1,6 @@
 {
   "name": "@jackcom/reachduck",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "A front-end helper for your stdlib instance.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -14,7 +14,7 @@
   "author": "JACKCOM",
   "license": "ISC",
   "scripts": {
-    "bamp": "npm-auto-version && rm -rf package-lock.json node_modules/ && npm i",
+    "bamp": "npm-auto-version && rm -rf package-lock.json node_modules/ && npm i && git add .",
     "clean": "rm -rf dist/ lib/",
     "build": "npm run clean && tsc",
     "build:dev": "npm run clean && webpack --mode development",

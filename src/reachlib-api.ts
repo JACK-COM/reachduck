@@ -90,13 +90,6 @@ export function getNetworkProvider(): T.NetworkProvider {
   );
 }
 
-/** Returns Configured Provider Environment (with e.g. AlgoIndexer and
- * AlgoDaemon urls etc) */
-export function getProviderEnv() {
-  const chain = createConnectorAPI();
-  return chain.getProviderEnv(createReachAPI());
-}
-
 /** Optionally opt-in in to assets */
 export async function inlineAssetOptIn(acc: T.ReachAccount, tokenId: any) {
   if (await acc.tokenAccepted(tokenId)) return true;

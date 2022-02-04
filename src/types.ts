@@ -16,6 +16,7 @@ export type ConnectorInterface = {
   /** Fetch account details from network */
   fetchAccount(acc: string | any): any | Promise<any>;
   /** Fetch an asset/token by its ID from the chain's block explorer */
+  fetchAssetById(assetId: number): any;
   /** Returns a blockchain-specific configuration for `stdlib` */
   getProviderEnv(stdlib: ReachStdLib, network?: string): void;
   /** Fetch account assets from network */
@@ -27,7 +28,6 @@ export type ConnectorInterface = {
    * Defaults to `MyAlgoConnect` on Algorand.
    */
   getWebWalletClientOpts(): any;
-  fetchAssetById(assetId: number): any;
   /** Search for an asset/token by its name. Returns a list of results */
   searchAssetsByName(assetName: string): any;
   /** Search for transactions for this `addr` */
@@ -50,6 +50,8 @@ export type CtcFnGroup<T> = {
 export type InteractFn<T extends BackendModule> = {
   [fn in keyof T]: (interact: any, ctcInfo?: string | number) => any;
 };
+
+export type LibFallbackOpts = { providerEnv?: any } & Record<string, any>;
 
 /** `NetworkData` describes single network data-item (for e.g. Ethereum) */
 export type NetworkData = {

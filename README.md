@@ -42,26 +42,36 @@ The library contains a single `reachduck` export. All methods listed below are a
     createReachAPI(): ReachStdLib;
 
     /* Returns a `ConnectorInterface` w/ additional chain-specific helpers */
-    createConnectorAPI(): ConnectorInterface;
-
-    type ConnectorInterface {
+    createConnectorAPI(): {
         /** Clear any user session details (usually for `WalletConnect`) */
         disconnectUser(): void;
         
         /** Fetch account details from network */
         fetchAccount(acc: string | any): any | Promise<any>;
         
-        /** Fetch account assets from network */
-        loadAssets(acc: string | any): any | Promise<any>;
+        /** Fetch an asset/token by its ID from the chain's block explorer */
+        fetchAssetById(assetId: number): any;
         
-        /** Get an object with a key containing a `WalletConnect` client instance */
+        /** Returns a blockchain-specific configuration for `stdlib` */
+        getProviderEnv(stdlib: ReachStdLib, network?: string): void;
+        
+        /** Fetch account assets from network */
+        loadAssets(acc: string | any): any | Promise<ReachToken[]>;
+        
+        /** Get a `WalletConnect` client instance */
         getWalletConnectClientOpts(): any;
         
         /**
          * Get an object with a key containing a wallet fallback for `stdlib`.
-         * Defaults to `MyAlgoConnect`
+         * Defaults to `MyAlgoConnect` on Algorand.
          */
         getWebWalletClientOpts(): any;
+        
+        /** Search for an asset/token by its name. Returns a list of results */
+        searchAssetsByName(assetName: string): any;
+        
+        /** Search for transactions for this `addr` */
+        searchForTransactions(addr: string, opts?: any): any;
     };
 ```
 
@@ -126,9 +136,13 @@ The library contains a single `reachduck` export. All methods listed below are a
     /* Extract a value from a `Maybe` value, or provide a fallback */
     fromMaybe(mVal: [val: "Some" | "None", v: any], format?: (v: any) => any, fallback?: any): any;
     
+    /* Alias for `getCurrentNetwork` */
+    getBlockchain(): string;
     /* Get the current stdlib instance's `connector` (blockchain) */
     getCurrentNetwork(): string;
     
+    /* Alias for `getNetworkProvider` */
+    getBlockchainNetwork(): string;
     /* Get current chain network  */
     getNetworkProvider(): "TestNet" | "MainNet";
     
