@@ -1,9 +1,5 @@
 import { ReachAccount, LibFallbackOpts } from "./types";
-import {
-  createReachAPI,
-  createConnectorAPI,
-  formatCurrency,
-} from "./reachlib-api";
+import { createReachAPI, createConnectorAPI } from "./reachlib-api";
 
 /** Returns Configured Provider Environment (with e.g. AlgoIndexer and
  * AlgoDaemon urls etc) */
@@ -78,13 +74,13 @@ export function disconnectUser() {
 
 /** Reconnect user session */
 export async function reconnectUser(addr?: string | null) {
-  const reach = createReachAPI();
+  const stdlib = createReachAPI();
   if (addr) {
     useWebWallet();
-    return hydrateUser(await reach.connectAccount({ addr }));
+    return hydrateUser(await stdlib.connectAccount({ addr }));
   } else {
     useWalletConnect();
-    return hydrateUser(await reach.getDefaultAccount());
+    return hydrateUser(await stdlib.getDefaultAccount());
   }
 }
 
@@ -96,11 +92,11 @@ export type ConnectedUserData = {
 
 /** HELPER | Restart user session */
 async function hydrateUser(account: ReachAccount): Promise<ConnectedUserData> {
-  const reach = createReachAPI();
+  const stdlib = createReachAPI();
   const connectorInterface = createConnectorAPI();
-  const address = reach.formatAddress(account.getAddress());
+  const address = stdlib.formatAddress(account.getAddress());
   const [bigBal, assetUpdates] = await Promise.all([
-    reach.balanceOf(account),
+    stdlib.balanceOf(account),
     connectorInterface.loadAssets(account),
   ]);
 
@@ -110,7 +106,7 @@ async function hydrateUser(account: ReachAccount): Promise<ConnectedUserData> {
   return {
     account,
     address,
-    balance: formatCurrency(bigBal),
+    balance: bigBal,
     ...assetUpdates,
   };
 }
