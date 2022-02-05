@@ -1,6 +1,6 @@
 import * as T from "./types";
 import { loadInterface } from "./networks/index.networks";
-import { trimByteString, formatCurrencyShort } from "./utils/helpers";
+import { trimByteString, formatNumberShort } from "./utils/helpers";
 import { NETWORKS, PROVIDERS } from "./constants";
 
 type LoadStdlibFn = { (args: any): any };
@@ -44,7 +44,7 @@ export function formatCurrency(amt: any, decs?: number, abbr = false): string {
   const reachFmt = formatWithDecimals(amt, d);
 
   return abbr === true && lt(amt, Number.MAX_SAFE_INTEGER)
-    ? formatCurrencyShort(Number(reachFmt))
+    ? formatNumberShort(Number(reachFmt))
     : reachFmt;
 }
 

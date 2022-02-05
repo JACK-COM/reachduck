@@ -45,6 +45,40 @@ describe("Helpers → fromMaybe", () => {
   });
 });
 
+describe("Helpers → Number helpers", () => {
+  const { formatNumberShort, abbrevNumber } = H;
+  it("Abbreviates by the number of groups in the value", () => {
+    // Number with '1' group (e.g. 1,234 = value(1), group(234))
+    expect(abbrevNumber(1)).toStrictEqual("K");
+    expect(abbrevNumber(2)).toStrictEqual("M");
+    expect(abbrevNumber(3)).toStrictEqual("B");
+    expect(abbrevNumber(4)).toStrictEqual("T");
+    expect(abbrevNumber(5)).toStrictEqual("Qa");
+    expect(abbrevNumber(6)).toStrictEqual("Qi");
+    expect(abbrevNumber(7)).toStrictEqual("Si");
+    expect(abbrevNumber(8)).toStrictEqual("Se");
+  });
+
+  it("Truncates a number", () => {
+    expect(formatNumberShort(1)).toStrictEqual("1");
+    expect(formatNumberShort(100)).toStrictEqual("100");
+    expect(formatNumberShort(10000)).toStrictEqual("10K");
+    let lg: number | bigint = 1_550_000;
+    expect(formatNumberShort(lg)).toStrictEqual("1.55M");
+    expect(formatNumberShort(lg, 1)).toStrictEqual("1.5M");
+    lg *= 1000;
+    expect(formatNumberShort(lg)).toStrictEqual("1.55B");
+    lg = BigInt(lg) * BigInt(1000000);
+    expect(formatNumberShort(lg)).toStrictEqual("1.55Qa");
+    lg = BigInt(lg) * BigInt(1000000);
+    expect(formatNumberShort(lg)).toStrictEqual("1.55Si");
+    lg = BigInt(lg) * BigInt(1000);
+    expect(formatNumberShort(lg)).toStrictEqual("1.55Se");
+    lg = BigInt(lg) * BigInt(lg);
+    expect(formatNumberShort(lg)).toStrictEqual("2.4!");
+  });
+});
+
 describe("Helpers → String helpers", () => {
   const { isImageFile, isVideoFile, trimByteString, truncateString } = H;
   const vid1 = `some-video.mp4`;

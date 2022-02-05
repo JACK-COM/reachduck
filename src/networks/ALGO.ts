@@ -38,8 +38,6 @@ export const AlgoInterface: ConnectorInterface = {
   searchForTransactions,
 };
 
-const emptyAcct = { assets: [], "created-apps": [] };
-
 /** Fetch account details (assets) */
 async function getAccount(address: string): Promise<any> {
   const { account } = await fetchAccount(address);

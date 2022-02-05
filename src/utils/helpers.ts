@@ -1,5 +1,13 @@
 export const noOp = () => null;
 
+// Generate a number abbreviation
+export function abbrevNumber(numOfGroups: number) {
+  if (Number.isNaN(numOfGroups) || !numOfGroups) return "";
+  const ab = ["K", "M", "B", "T", "Qa", "Qi", "Si", "Se", "O", "N", "D"];
+  if (numOfGroups >= ab.length) return "!";
+  return ab[numOfGroups - 1];
+}
+
 /** Copy `val` to user's keyboard */
 export async function copyToClipboard(val: string) {
   return navigator?.clipboard?.writeText(val);
@@ -33,20 +41,12 @@ export function formatCurrencyLocale(val: number, locale?: any) {
 }
 
 /** Abbreviated currency formatter (e.g. `fn(1000)` -> `1K` ) */
-export function formatCurrencyShort(val: number, decimalPlaces = 2) {
-  // Generate a number abbreviation
-  const numberAbbr = (grpCount: number) => {
-    if (Number.isNaN(grpCount) || !grpCount) return "";
-    const abbrs = ["", "K", "M", "B", "T", "Qa", "Qi", "Si", "Se"];
-    if (grpCount >= abbrs.length) return "!";
-    return abbrs[grpCount];
-  };
-
+export function formatNumberShort(val: number | bigint, decimalPlaces = 2) {
   const parts = Intl.NumberFormat().formatToParts(val);
   const groups = parts.filter((p) => p.type === "group").length;
   const int = parts[0].value;
-  // Note: can dig into parts to generate decimals (e.g. 10.1K)
-  return `${int}${getDecimals(parts, decimalPlaces)}${numberAbbr(groups)}`;
+  const decs = getDecimals(parts, decimalPlaces);
+  return `${int}${decs}${abbrevNumber(groups)}`;
 }
 
 /** Assert that `path` represents an Image file */
