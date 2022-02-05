@@ -48,32 +48,22 @@ export function formatCurrency(amt: any, decs?: number, abbr = false): string {
     : reachFmt;
 }
 
-/** Alias for `getNetworkProvider()` */
+/** Determine whether app is running on `MainNet` or `TestNet` (default) */
 export function getBlockchainNetwork() {
-  return getNetworkProvider();
-}
-
-/** Alias for `getCurrentNetwork()` */
-export function getBlockchain() {
-  return getCurrentNetwork();
+  return (
+    localStorage.getItem(NETWORK_PROVIDER_KEY) ||
+    selectBlockchainNetwork(PROVIDERS.TESTNET)
+  );
 }
 
 /**
  * Get last user-saved (or default) network for App. Sets the default
  * to `Algorand` if this is the user's first time in the application.
  */
-export function getCurrentNetwork(): string {
+export function getBlockchain(): string {
   const defaultNetwork = NETWORKS.ALGO.abbr;
   const stored = localStorage.getItem(NETWORK_STORAGE_KEY);
   return stored || selectBlockchain(defaultNetwork);
-}
-
-/** Determine whether app is running on `MainNet` or `TestNet` (default) */
-export function getNetworkProvider(): T.NetworkProvider {
-  return (
-    localStorage.getItem(NETWORK_PROVIDER_KEY) ||
-    selectBlockchainNetwork(PROVIDERS.TESTNET)
-  );
 }
 
 /** Optionally opt-in in to assets */
@@ -88,7 +78,7 @@ export async function optInToAsset(acc: T.ReachAccount, tokenId: any) {
 
 /** Get a UI-friendly list of Networks */
 export function listSupportedNetworks(): T.NetworkData[] {
-  const activeNetwork = getCurrentNetwork();
+  const activeNetwork = getBlockchain();
 
   return Object.values(NETWORKS).map((val) => ({
     ...val,
@@ -99,7 +89,7 @@ export function listSupportedNetworks(): T.NetworkData[] {
 /** Initialize the stdlib instance */
 export function loadReach(loadStdlibFn: LoadStdlibFn) {
   // Instantiate Reach object
-  reach = loadStdlibFn({ REACH_CONNECTOR_MODE: getCurrentNetwork() });
+  reach = loadStdlibFn({ REACH_CONNECTOR_MODE: getBlockchain() });
   connectorInterface = loadInterface(reach.connector);
   return true;
 }
