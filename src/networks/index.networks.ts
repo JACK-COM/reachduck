@@ -31,7 +31,7 @@ export function loadInterface(chain: string): ConnectorInterface {
   return NOOP_INTERFACE;
 }
 
-export const NETWORKS: Record<string, NetworkData> = {
+export const NETWORKS: Record<keyof typeof CHAINS, NetworkData> = {
   ALGO: { name: "Algorand", abbr: "ALGO", decimals: 6 },
   ETH: { name: "Ethereum", abbr: "ETH", decimals: 18 },
 };
