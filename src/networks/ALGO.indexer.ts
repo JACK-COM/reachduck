@@ -9,7 +9,6 @@ type TxnSearchOpts = {
 
 /** @private Algorand Indexer instance (for querying the chain) */
 let indexer: Indexer;
-const emptyAcct: Record<string, any> = { assets: [], "created-apps": [] };
 
 /**
  * @description Get Algo indexer client instance
@@ -34,7 +33,7 @@ export function useIndexerClient(): Indexer {
  */
 export async function fetchAccount(addr: string) {
   const Indexer = useIndexerClient();
-  const result: typeof emptyAcct = await Indexer.lookupAccountByID(addr)
+  const result: any = await Indexer.lookupAccountByID(addr)
     .do()
     .catch(fallbackAcct);
   return result.account;
@@ -42,6 +41,7 @@ export async function fetchAccount(addr: string) {
 
 function fallbackAcct(e: any) {
   console.warn("Could not fetch ALGO account", e);
+  const emptyAcct = { assets: [], "created-apps": [] };
   return { account: emptyAcct };
 }
 

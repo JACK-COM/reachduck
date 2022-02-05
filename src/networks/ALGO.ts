@@ -38,7 +38,7 @@ export const AlgoInterface: ConnectorInterface = {
   searchForTransactions,
 };
 
-const emptyAcct = { assets: [], "created-apps": [] };
+export default AlgoInterface;
 
 /** Fetch account details (assets) */
 async function getAccount(address: string): Promise<any> {

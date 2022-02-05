@@ -1,16 +1,6 @@
-import * as constants from "./constants";
-import * as utils from "./utils/helpers";
-import * as account from "./account";
-import * as reachlib from "./reachlib-api";
-
-export const reachduck = {
-  ...constants,
-  ...utils,
-  ...account,
-  ...reachlib,
-};
-export * from "./constants";
 export * from "./utils/helpers";
-export * from "./account";
+export * from "./session";
+export * from "./storage";
+export * from "./types";
+export * from "./networks/index.networks";
 export * from "./reachlib-api";
-export default reachduck;

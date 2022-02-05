@@ -67,7 +67,7 @@ The library contains a single `reachduck` export. All methods listed below are a
          */
         getWebWalletClientOpts(): any;
         
-        /** Search for an asset/token by its name. Returns a list of results */
+        /** Search for an asset/token by its name. Returns a list */
         searchAssetsByName(assetName: string): any;
         
         /** Search for transactions for this `addr` */
@@ -130,24 +130,20 @@ The library contains a single `reachduck` export. All methods listed below are a
     /* UI-friendly currency formatting */
     formatCurrency(amount: any, decimals?: number | undefined, abbr?: boolean): string;
     
+    /* Builtin JS locale currency formatter */
+    formatCurrencyLocale(val: number): string;
+    
     /* UI-friendly currency formatting with large num abbreviation */
-    formatCurrencyShort(val: number, decimalPlaces?: number): string;
+    formatNumberShort(val: number, decimalPlaces?: number): string;
     
     /* Extract a value from a `Maybe` value, or provide a fallback */
     fromMaybe(mVal: [val: "Some" | "None", v: any], format?: (v: any) => any, fallback?: any): any;
     
-    /* Alias for `getCurrentNetwork` */
-    getBlockchain(): string;
     /* Get the current stdlib instance's `connector` (blockchain) */
-    getCurrentNetwork(): string;
+    getBlockchain(): string;
     
-    /* Alias for `getNetworkProvider` */
-    getBlockchainNetwork(): string;
     /* Get current chain network  */
-    getNetworkProvider(): "TestNet" | "MainNet";
-    
-    /* Builtin JS locale currency formatter */
-    intlFormatCurrency(val: number): string;
+    getBlockchainNetwork(): "TestNet" | "MainNet";
     
     /* Assert `path` represents an image file */
     isImageFile(path: string): boolean;
@@ -162,13 +158,13 @@ The library contains a single `reachduck` export. All methods listed below are a
     noOp(): null;
     
     /* Convert a string into a chain-specific contract representation */
-    parseContractAddress(ctc: any): any;
+    parseAddress(ctc: any): any;
     
     /* trims empty bytes from a decoded Byte string */
     trimByteString(str: string): string;
     
     /* Shrink an address to `radius`...`radius`-length string */
-    truncateAccountString(acct: string, radius = 6): string;
+    truncateString(acct: string, radius = 6): string;
 ```
 
 ## Development
