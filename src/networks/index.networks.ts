@@ -1,11 +1,11 @@
-import { ConnectorInterface } from "../types";
+import { ConnectorInterface, NetworkData } from "../types";
 import { noOp } from "../utils/helpers";
-import { AlgoInterface } from "./ALGO";
+import ALGO from "./ALGO";
 
 type Connector = string;
 const returnList = () => [];
 
-const DEFAULT_INTERFACE: ConnectorInterface = {
+const NOOP_INTERFACE: ConnectorInterface = {
   disconnectUser: noOp,
   fetchAccount: noOp,
   fetchAssetById: noOp,
@@ -18,7 +18,7 @@ const DEFAULT_INTERFACE: ConnectorInterface = {
 };
 
 const CHAINS: Record<Connector, ConnectorInterface> = {
-  ALGO: AlgoInterface,
+  ALGO,
 };
 
 /**
@@ -28,5 +28,10 @@ const CHAINS: Record<Connector, ConnectorInterface> = {
  */
 export function loadInterface(chain: string): ConnectorInterface {
   if (CHAINS[chain]) return CHAINS[chain];
-  return DEFAULT_INTERFACE;
+  return NOOP_INTERFACE;
 }
+
+export const NETWORKS: Record<string, NetworkData> = {
+  ALGO: { name: "Algorand", abbr: "ALGO", decimals: 6 },
+  ETH: { name: "Ethereum", abbr: "ETH", decimals: 18 },
+};
