@@ -1,5 +1,9 @@
 import * as T from "./types";
-import { loadInterface, NETWORKS } from "./networks/index.networks";
+import {
+  ChainSymbol,
+  loadInterface,
+  NETWORKS,
+} from "./networks/index.networks";
 import { trimByteString, formatNumberShort } from "./utils/helpers";
 import { getBlockchain, selectBlockchainNetwork } from "./storage";
 
@@ -37,9 +41,9 @@ export function formatAddress(acc: T.ReachAccount) {
 
 /** `@reach-helper` Optionally-abbreviated currency formatter (e.g. `fn(1000)` -> `1000` || `1K` ). Expects `amt` to be in atomic unit for network */
 export function formatCurrency(amt: any, decs?: number, abbr = false): string {
-  const { connector, formatWithDecimals, lt } = createReachAPI();
-  const d = isNaN(Number(decs)) ? NETWORKS[connector].decimals || 1 : decs;
-  const reachFmt = formatWithDecimals(amt, d);
+  const { formatWithDecimals, lt } = createReachAPI();
+  const decimals = parseNetworkDecimals(Number(decs));
+  const reachFmt = formatWithDecimals(amt, decimals);
 
   return abbr === true && lt(amt, Number.MAX_SAFE_INTEGER)
     ? formatNumberShort(Number(reachFmt))
@@ -90,9 +94,13 @@ export function parseAddress(ctc: any) {
 
 /** `@reach-helper` Convert `val` to atomic units for the current network */
 export function parseCurrency(val: any, dec?: number) {
-  const { connector, parseCurrency: parse } = createReachAPI();
-  const decimals = isNaN(Number(dec)) ? NETWORKS[connector].decimals || 0 : dec;
-  return parse(val, decimals);
+  const decimals = parseNetworkDecimals(Number(dec));
+  return createReachAPI().parseCurrency(val, decimals);
+}
+
+function parseNetworkDecimals(decimals?: number) {
+  const key = createReachAPI().connector as ChainSymbol;
+  return isNaN(Number(decimals)) ? NETWORKS[key].decimals || 0 : decimals;
 }
 
 /** `@reach-helper` Get token data and `acc`'s balance of token (if available) */
