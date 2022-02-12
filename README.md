@@ -1,6 +1,7 @@
 # reachduck 🦆
 
-Front-end helper functions for your reach `stdlib` instance.\
+Front-end helper functions for your DApp.\
+Can optionally be paired with (unaffiliated) [reach `stdlib`](https://www.npmjs.com/package/@reach-sh/stdlib) for more functionality (see below).
 
 ## CAVEAT EMPTOR
 ### 1. This library is *extremely* in Alpha-status. 
