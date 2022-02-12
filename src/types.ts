@@ -9,31 +9,6 @@ export type BackendModule = Record<string, any>;
 /** Reach StdLib instance */
 export type BigNumber = any;
 
-/** Interface for blockchain-specific helpers */
-export type ConnectorInterface = {
-  /** Clear any user session details (usually for `WalletConnect`) */
-  disconnectUser(): void;
-  /** Fetch account details from network */
-  fetchAccount(acc: string | any): any | Promise<any>;
-  /** Fetch an asset/token by its ID from the chain's block explorer */
-  fetchAssetById(assetId: number): any;
-  /** Returns a blockchain-specific configuration for `stdlib` */
-  getProviderEnv(stdlib: ReachStdLib, network?: string): void;
-  /** Fetch account assets from network */
-  loadAssets(acc: string | any): any | Promise<ReachToken[]>;
-  /** Get a `WalletConnect` client instance */
-  getWalletConnectClientOpts(): any;
-  /**
-   * Get an object with a key containing a wallet fallback for `stdlib`.
-   * Defaults to `MyAlgoConnect` on Algorand.
-   */
-  getWebWalletClientOpts(): any;
-  /** Search for an asset/token by its name. Returns a list of results */
-  searchAssetsByName(assetName: string): any;
-  /** Search for transactions for this `addr` */
-  searchForTransactions(addr: string, opts?: any): any;
-};
-
 /** Reach Contract `API` Function(s) */
 export type CtcFn = { (...args: any[]): any | Promise<any> };
 
@@ -61,7 +36,7 @@ export type NetworkData = {
   decimals?: number;
 };
 
-export type NetworkProvider = string | ("MainNet" | "TestNet" | "BetaNet");
+export type NetworkProvider = string;
 
 export type ReachToken = {
   id: number | string;

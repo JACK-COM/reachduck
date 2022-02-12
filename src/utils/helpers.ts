@@ -22,6 +22,15 @@ export function checkVersionChanged(
   return currentVersion !== lastVersion;
 }
 
+/** App Migration helper: set your current app version */
+export function setAppVersion(
+  version: string | number,
+  APP_VERSION_KEY = "app-version"
+) {
+  localStorage.setItem(APP_VERSION_KEY, version.toString());
+  return version;
+}
+
 /**
  * Unwrap a `Maybe` value. When `mVal[0]` is `"Some"`, `mVal[1]` has a value
  */

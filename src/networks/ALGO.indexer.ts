@@ -6,9 +6,24 @@ type TxnSearchOpts = {
   minRound?: number;
   note?: string;
 };
+type AlgoProviderNetwork = "MainNet" | "TestNet" | "BetaNet";
+type AlgoProviderEnv = {
+  ALGO_INDEXER_PORT?: string;
+  ALGO_INDEXER_SERVER: string;
+  ALGO_INDEXER_TOKEN?: string;
+  ALGO_NODE_WRITE_ONLY?: string;
+  ALGO_PORT?: string;
+  ALGO_SERVER: string;
+  ALGO_TOKEN?: string;
+  REACH_ISOLATED_NETWORK?: string;
+};
 
 /** @private Algorand Indexer instance (for querying the chain) */
+const networks: AlgoProviderNetwork[] = ["TestNet", "BetaNet", "MainNet"];
+const TK = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 let indexer: Indexer;
+let network: AlgoProviderNetwork = "TestNet";
+let reachProviderEnv: AlgoProviderEnv;
 
 /**
  * @description Get Algo indexer client instance
@@ -16,11 +31,10 @@ let indexer: Indexer;
  */
 export function useIndexerClient(): Indexer {
   if (!indexer) {
-    const INDEXER = "https://algoindexer.testnet.algoexplorerapi.io/";
-    const INDEXER_TOKEN =
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-    const ixURL = new URL(INDEXER);
-    indexer = new Indexer(INDEXER_TOKEN, INDEXER, ixURL.port);
+    resetProvider();
+    const { ALGO_INDEXER_SERVER } = getProviderEnv(network);
+    const ixURL = new URL(ALGO_INDEXER_SERVER);
+    indexer = new Indexer(TK, ALGO_INDEXER_SERVER, ixURL.port);
   }
 
   return indexer;
@@ -39,12 +53,6 @@ export async function fetchAccount(addr: string) {
   return result.account;
 }
 
-function fallbackAcct(e: any) {
-  console.warn("Could not fetch ALGO account", e);
-  const emptyAcct = { assets: [], "created-apps": [] };
-  return { account: emptyAcct };
-}
-
 /**
  * Get asset given its `id`
  * @param assetId Asset id
@@ -61,6 +69,17 @@ export async function fetchAssetById(
   } catch (error: any) {
     return {} as ReachToken;
   }
+}
+
+/** Generate a `providerEnv` for stdlib */
+export function getProviderEnv(
+  providerNetwork: AlgoProviderNetwork = "TestNet"
+): AlgoProviderEnv {
+  const valid = networks.includes(providerNetwork)
+    ? providerNetwork
+    : networks[0];
+  if (!reachProviderEnv) resetProvider(valid);
+  return reachProviderEnv;
 }
 
 /**
@@ -119,6 +138,12 @@ export async function searchForTransactions(
   }
 }
 
+function fallbackAcct(e: any) {
+  console.warn("Could not fetch ALGO account", e);
+  const emptyAcct = { assets: [], "created-apps": [] };
+  return { account: emptyAcct };
+}
+
 /**
  * Search for assets called `assetName`
  * @param assetName Name target
@@ -139,5 +164,21 @@ function formatAssetMetadata(
     supply: params.total,
     url: params.url,
     verified: params.verified || false,
+  };
+}
+
+/** Store initial provider settings */
+function resetProvider(prov: AlgoProviderNetwork = "TestNet") {
+  const key = prov.toLowerCase();
+  network = prov;
+  reachProviderEnv = {
+    ALGO_SERVER: "https://testnet.algoexplorerapi.io",
+    // ALGO_SERVER: `https://node.${key}.algoexplorerapi.io`,
+    ALGO_PORT: "",
+    ALGO_TOKEN: TK,
+    ALGO_INDEXER_SERVER: `https://algoindexer.${key}.algoexplorerapi.io`,
+    ALGO_INDEXER_PORT: "",
+    ALGO_INDEXER_TOKEN: TK,
+    REACH_ISOLATED_NETWORK: "no",
   };
 }
