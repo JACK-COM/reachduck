@@ -1,20 +1,22 @@
 import { getBlockchain } from "../storage";
 import { NetworkData, ReachToken } from "../types";
-import { noOp } from "../utils/helpers";
 import ALGO from "./ALGO";
 
-const returnList = () => [];
+const unimplementedList = () => [];
+const unImplemented = (name: string) => {
+  console.log(`Unimplemented ${getBlockchain()} method "${name}"`);
+};
 
 const NOOP_INTERFACE: ConnectorInterface = {
-  disconnectUser: noOp,
-  fetchAccount: noOp,
-  fetchAssetById: noOp,
-  getProviderEnv: noOp,
-  getWalletConnectClientOpts: noOp,
-  getWebWalletClientOpts: noOp,
-  loadAssets: noOp,
-  searchAssetsByName: returnList,
-  searchForTransactions: returnList,
+  disconnectUser: () => unImplemented("disconnectUser"),
+  fetchAccount: () => unImplemented("fetchAccount"),
+  fetchAssetById: () => unImplemented("fetchAssetById"),
+  getProviderEnv: () => unImplemented("getProviderEnv"),
+  getWalletConnectClientOpts: () => unImplemented("getWalletConnectClientOpts"),
+  getWebWalletClientOpts: () => unImplemented("getWebWalletClientOpts"),
+  loadAssets: () => unImplemented("loadAssets"),
+  searchAssetsByName: unimplementedList,
+  searchForTransactions: unimplementedList,
 };
 
 const CHAINS = {
