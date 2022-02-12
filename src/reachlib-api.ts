@@ -1,11 +1,7 @@
 import * as T from "./types";
-import {
-  ChainSymbol,
-  loadInterface,
-  NETWORKS,
-} from "./networks/index.networks";
+import { ChainSymbol, NETWORKS } from "./networks/index.networks";
 import { trimByteString, formatNumberShort } from "./utils/helpers";
-import { getBlockchain, selectBlockchainNetwork } from "./storage";
+import { getBlockchain, selectBlockchain } from "./storage";
 
 type LoadStdlibFn = { (args: any): any };
 
@@ -14,14 +10,6 @@ const UNINSTANTIATED = `
 QUACK! ReachStdlib is not instantiated. See "@jackcom/reachduck" docs for info.
 `;
 let reach: T.ReachStdLib;
-let connectorInterface: T.ConnectorInterface;
-
-/** `@reach-helper` Generate an interface for querying an underlying blockchain */
-export function createConnectorAPI() {
-  // Instantiate Reach object
-  if (!connectorInterface) throw new Error(UNINSTANTIATED);
-  return connectorInterface;
-}
 
 /** `@reach-helper` Global default reach object */
 export function createReachAPI() {
@@ -60,22 +48,24 @@ export async function optInToAsset(acc: T.ReachAccount, tokenId: any) {
     .catch(() => false);
 }
 
-/** `@reach-helper` Get a UI-friendly list of Networks */
-export function listSupportedNetworks(): T.NetworkData[] {
-  const activeNetwork = getBlockchain();
+/**
+ * `@reach-helper` Initialize the stdlib instance. Note: this will NOT configure
+ * a wallet fallback: you can handle that later with other helper functions.
+ */
+export function loadReach(
+  loadStdlibFn: LoadStdlibFn,
+  chain?: ChainSymbol | string
+) {
+  if (reach?.connector) {
+    console.warn("Reach already instantiated");
+    return reach;
+  }
 
-  return Object.values(NETWORKS).map((val) => ({
-    ...val,
-    active: val.abbr === activeNetwork,
-  }));
-}
-
-/** `@reach-helper` Initialize the stdlib instance */
-export function loadReach(loadStdlibFn: LoadStdlibFn) {
   // Instantiate Reach object
-  reach = loadStdlibFn({ REACH_CONNECTOR_MODE: getBlockchain() });
-  connectorInterface = loadInterface(reach.connector);
-  return true;
+  const REACH_CONNECTOR_MODE = chain || getBlockchain();
+  selectBlockchain(REACH_CONNECTOR_MODE);
+  reach = loadStdlibFn({ REACH_CONNECTOR_MODE });
+  return reach;
 }
 
 /**
@@ -98,11 +88,6 @@ export function parseCurrency(val: any, dec?: number) {
   return createReachAPI().parseCurrency(val, decimals);
 }
 
-function parseNetworkDecimals(decimals?: number) {
-  const key = createReachAPI().connector as ChainSymbol;
-  return isNaN(Number(decimals)) ? NETWORKS[key].decimals || 0 : decimals;
-}
-
 /** `@reach-helper` Get token data and `acc`'s balance of token (if available) */
 export async function tokenMetadata(
   token: any,
@@ -112,7 +97,7 @@ export async function tokenMetadata(
   const fetchToken = () =>
     acc
       .tokenMetadata(token)
-      .then((md: any) => formatTokenMetadata(token, 0, md))
+      .then((md: any) => formatReachToken(token, 0, md))
       .catch(() => undefined);
 
   const [metadata, bal] = await Promise.all([
@@ -122,17 +107,13 @@ export async function tokenMetadata(
 
   if (!metadata) throw new Error("Token not found");
 
-  return formatTokenMetadata(token, bal, metadata);
+  return formatReachToken(token, bal, metadata);
 }
 
-/* HELPERS */
+/* INTERNAL */
 
 /** `@reach-helper` Format token metadata from `tokenMetadata` API request */
-function formatTokenMetadata(
-  tokenId: any,
-  amount: any,
-  data: any
-): T.ReachToken {
+function formatReachToken(tokenId: any, amount: any, data: any): T.ReachToken {
   const id = parseAddress(tokenId);
   const fallbackName = `Asset #${id}`;
   const fallbackSymbol = `#${id}`;
@@ -147,4 +128,9 @@ function formatTokenMetadata(
     decimals: data.decimals,
     verified: data.verified || false,
   };
+}
+
+function parseNetworkDecimals(decimals?: number) {
+  const key = createReachAPI().connector as ChainSymbol;
+  return isNaN(Number(decimals)) ? NETWORKS[key].decimals || 0 : decimals;
 }

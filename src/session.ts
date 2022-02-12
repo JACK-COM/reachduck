@@ -1,10 +1,11 @@
 import { ReachAccount, LibFallbackOpts } from "./types";
-import { createReachAPI, createConnectorAPI } from "./reachlib-api";
+import { createReachAPI } from "./reachlib-api";
+import { createConnectorAPI } from "./networks/index.networks";
 
 /** Configure stdlib wallet fallback */
 function setLibFallback(opts: LibFallbackOpts) {
-  const { walletFallback, setWalletFallback } = createReachAPI();
-  const defaultEnv = createConnectorAPI().getProviderEnv(createReachAPI());
+  const { walletFallback, setWalletFallback, connector } = createReachAPI();
+  const defaultEnv = createConnectorAPI().getProviderEnv(connector);
   const providerEnv = opts.providerEnv || defaultEnv;
 
   setWalletFallback(walletFallback({ ...opts, providerEnv }));
@@ -87,11 +88,11 @@ export type ConnectedUserData = {
 /** HELPER | Restart user session */
 async function hydrateUser(account: ReachAccount): Promise<ConnectedUserData> {
   const stdlib = createReachAPI();
-  const connectorInterface = createConnectorAPI();
+  const chain = createConnectorAPI();
   const address = stdlib.formatAddress(account.getAddress());
   const [bigBal, assetUpdates] = await Promise.all([
     stdlib.balanceOf(account),
-    connectorInterface.loadAssets(account),
+    chain.loadAssets(address),
   ]);
 
   persistUser(address);
