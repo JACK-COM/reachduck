@@ -1,7 +1,7 @@
 {
   "name": "@jackcom/reachduck",
   "version": "0.1.4",
-  "description": "A front-end helper for your stdlib instance.",
+  "description": "A front-end helper for your DApp.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
