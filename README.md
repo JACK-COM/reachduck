@@ -14,24 +14,49 @@ This package works without reach. If you need the latter, you will need to separ
 ## Methods
 All methods below are available as individual imports.
 
-### Working with Blockchain networks
+### 1. Working with Blockchain networks
 You can use a predictable API for doing some common things with the underlying chain (except signing transactions). The `ConnectorInterface` (shown below) doesn't depend on an `stdlib` instance, and looks the same regardless of what network you're working with. 
 
-#### Blockchain helpers
+#### Blockchain Functions
 Use `createConnectorAPI` to access an object with the following [**helper methods**](#connectorinterface).
+```typescript
+/** 
+ * Returns a `ConnectorInterface` w/ additional chain-specific helpers. 
+ * Note: not all `network` options are accepted by all chains. Defaults
+ * to "ALGO" + "TestNet" if no values are provided.
+ */
+function createConnectorAPI(
+    chain?: "ALGO" | "ETH",
+    network?: "TestNet" | "BetaNet" | "MainNet"
+): ConnectorInterface;
+```
+##### Example
+
 You can see the methods on [`ConnectorInterface` here](#connectorinterface)
 ```typescript
-/* Returns a `ConnectorInterface` w/ additional chain-specific helpers */
-function createConnectorAPI(chain?: string): ConnectorInterface;
+import { createConnectorAPI } from "@jackcom/reachduck"
+
+// More chains will be supported in the future
+const algorand: ConnectorInterface = createConnectorAPI("ALGO"/* , "TestNet | BetaNet | MainNet" */);
+const assets: Record<string, any> = await algorand.loadAssets("ADR2SOFN...");
+
+// In the future you can also do
+const ethereum: ConnectorInterface = createConnectorAPI("ETH");
+const assets: Record<string, any> = await ethereum.loadAssets("0x9f32d4...");
 ```
 
-### Working with Stdlib 
+### 2. Working with Stdlib 
+#### Stdlib API Functions
 ```typescript
 /* 
  * Initialize your `stdlib` instance. Call this EARLY before your code needs 
  * the `stdlib` instance. You only need to use this once. 
  */
-function loadReach(loadStdlibFn: (args: any) => ReachStdLib): boolean;
+function loadReach(
+    loadStdlibFn: (args: any) => ReachStdLib,
+    chain?: string,
+    network?: "TestNet" | "MainNet"
+): boolean;
 
 /* Returns your configured `stdlib` instance. Ensure you have called `loadReach( loadStdlib )` at least once before using this function. */
 function createReachAPI(): ReachStdLib;
@@ -53,8 +78,11 @@ function setCurrentNetwork(network: string): string;
     
 /* Fetch token metadata and balance for `acc` (if available) */
 function tokenMetadata(token: any, acc: ReachAccount): Promise<ReachToken>;
+
+/** Opt-in in to assets */
+function optInToAsset(acc: T.ReachAccount, tokenId: any): Promise<boolean>;
 ```
-#### Example
+##### Example
 
 ```typescript
 import { loadStdlib } from "@reach-sh/stdlib"
@@ -93,10 +121,17 @@ console.log(userdata);
 ### Session Management
 **Note:** Session management depends on an `stdlib` instance. Make sure you have a version of the Reach JS standard library no older than `0.1.8-rc.3`.
 ```typescript
-/* Check if a previous user session (address or WalletConnect) exists */
+/** 
+ * Check if a previous user session (address or WalletConnect) exists.
+ * When `exists` is true, you can call `reconnectUser( addr )` using the
+ * `addr` value returned from this function. */
 function checkSessionExists(): { exists: boolean; isWCSession: boolean; addr: string | null;};
 
-/* Begin a session with a user's wallet of choice. Make sure to call `useWebWallet` */
+/** 
+ * Begin a session with a user's wallet of choice. Make sure to call 
+ * `useWebWallet` or `useWalletConnect` before calling this function, 
+ * as it will get the user to authenticate using a wallet (and will
+ * error if a fallback isn't found.) */
 function connectUser(): Promise<ConnectedUserData>;
 
 /* Clean up current user session and reload window. Call LAST in your app */

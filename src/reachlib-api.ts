@@ -2,6 +2,7 @@ import * as T from "./types";
 import { ChainSymbol, NETWORKS } from "./networks/index.networks";
 import { trimByteString, formatNumberShort } from "./utils/helpers";
 import { getBlockchain, selectBlockchain } from "./storage";
+import { selectBlockchainNetwork } from ".";
 
 type LoadStdlibFn = { (args: any): any };
 
@@ -40,7 +41,7 @@ export function formatCurrency(amt: any, decs?: number, abbr = false): string {
 
 /** `@reach-helper` Optionally opt-in in to assets */
 export async function optInToAsset(acc: T.ReachAccount, tokenId: any) {
-  if (await acc.tokenAccepted(tokenId)) return true;
+  if (await acc.tokenAccepted(tokenId)) return Promise.resolve(true);
 
   return acc
     .tokenAccept(tokenId)
@@ -54,7 +55,8 @@ export async function optInToAsset(acc: T.ReachAccount, tokenId: any) {
  */
 export function loadReach(
   loadStdlibFn: LoadStdlibFn,
-  chain?: ChainSymbol | string
+  chain?: ChainSymbol | string,
+  network: "TestNet" | "MainNet" = "TestNet"
 ) {
   if (reach?.connector) {
     console.warn("Reach already instantiated");
@@ -63,7 +65,8 @@ export function loadReach(
 
   // Instantiate Reach object
   const REACH_CONNECTOR_MODE = chain || getBlockchain();
-  selectBlockchain(REACH_CONNECTOR_MODE);
+  void selectBlockchain(REACH_CONNECTOR_MODE);
+  void selectBlockchainNetwork(network);
   reach = loadStdlibFn({ REACH_CONNECTOR_MODE });
   return reach;
 }
