@@ -1,27 +1,31 @@
+import { selectBlockchainNetwork } from "..";
 import { getBlockchain } from "../storage";
 import { NetworkData, ReachToken } from "../types";
 import ALGO from "./ALGO";
 
-const unimplementedList = () => [];
-const unImplemented = (name: string) => {
-  console.log(`Unimplemented ${getBlockchain()} method "${name}"`);
-};
+const NOOP = (connector: string): ConnectorInterface => {
+  const unimplementedList = () => [];
+  const unImplemented = (name: string) => {
+    console.log(`Unimplemented ${connector} method "${name}"`);
+  };
 
-const NOOP_INTERFACE: ConnectorInterface = {
-  disconnectUser: () => unImplemented("disconnectUser"),
-  fetchAccount: () => unImplemented("fetchAccount"),
-  fetchAssetById: () => unImplemented("fetchAssetById"),
-  getProviderEnv: () => unImplemented("getProviderEnv"),
-  getWalletConnectClientOpts: () => unImplemented("getWalletConnectClientOpts"),
-  getWebWalletClientOpts: () => unImplemented("getWebWalletClientOpts"),
-  loadAssets: () => unImplemented("loadAssets"),
-  searchAssetsByName: unimplementedList,
-  searchForTransactions: unimplementedList,
+  return {
+    disconnectUser: () => unImplemented("disconnectUser"),
+    fetchAccount: () => unImplemented("fetchAccount"),
+    fetchAssetById: () => unImplemented("fetchAssetById"),
+    getProviderEnv: () => unImplemented("getProviderEnv"),
+    getWalletConnectClientOpts: () =>
+      unImplemented("getWalletConnectClientOpts"),
+    getWebWalletClientOpts: () => unImplemented("getWebWalletClientOpts"),
+    loadAssets: () => unImplemented("loadAssets"),
+    searchAssetsByName: unimplementedList,
+    searchForTransactions: unimplementedList,
+  };
 };
 
 const CHAINS = {
   ALGO,
-  ETH: NOOP_INTERFACE,
+  ETH: NOOP("ETH"),
 };
 export type ChainSymbol = keyof typeof CHAINS;
 export type NetworksMap = Record<ChainSymbol, NetworkData>;
@@ -67,14 +71,16 @@ export function listSupportedNetworks(): NetworkData[] {
 }
 
 /**
- * Generate an interface for talking to an underlying blockchain,
- * Returns an API for interacting with configured `stdlib` instance. It
- * will determine the current connector and pull in the relevant interface
- * for fetching account data etc. for that chain. */
+ * Returns a `ConnectorInterface` w/ additional chain-specific helpers.
+ * Note: not all `network` options are accepted by all chains. Defaults
+ * to "ALGO" + "TestNet" if no values are provided.
+ */
 export function createConnectorAPI(
-  chain?: string | ChainSymbol
+  chain?: string | ChainSymbol,
+  network?: string
 ): ConnectorInterface {
   const key = (chain || getBlockchain()) as ChainSymbol;
-  if (CHAINS[key]) return CHAINS[key] as ConnectorInterface;
-  return NOOP_INTERFACE;
+  if (!CHAINS[key]) return NOOP(key);
+  if (network) selectBlockchainNetwork(network);
+  return CHAINS[key] as ConnectorInterface;
 }
