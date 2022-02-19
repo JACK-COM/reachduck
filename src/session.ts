@@ -1,6 +1,7 @@
 import { ReachAccount, LibFallbackOpts } from "./types";
 import { createReachAPI } from "./reachlib-api";
 import { createConnectorAPI } from "./networks/index.networks";
+import { browserContext, STORAGE } from ".";
 
 /** Configure stdlib wallet fallback */
 function setLibFallback(opts: LibFallbackOpts) {
@@ -14,14 +15,14 @@ function setLibFallback(opts: LibFallbackOpts) {
 /** Configure `stdlib` to fallback to chain's web wallet provider */
 export function useWebWallet() {
   const chain = createConnectorAPI();
-  localStorage.removeItem("walletconnect");
+  STORAGE.removeItem("walletconnect");
   return setLibFallback(chain.getWebWalletClientOpts());
 }
 
 /** Configure `stdlib` to fallback to `WalletConnect` as wallet provider */
 export function useWalletConnect() {
   const chain = createConnectorAPI();
-  localStorage.removeItem("user");
+  STORAGE.removeItem("user");
   return setLibFallback(chain.getWalletConnectClientOpts());
 }
 
@@ -44,8 +45,8 @@ export function checkSessionExists(): {
 } {
   let addr = null;
   const [wc, myalgo]: any[] = [
-    localStorage.getItem("walletconnect"),
-    localStorage.getItem("user"),
+    STORAGE.getItem("walletconnect"),
+    STORAGE.getItem("user"),
   ];
 
   if (Array.isArray(wc?.accounts)) addr = wc.accounts[0];
@@ -62,9 +63,9 @@ export function checkSessionExists(): {
 export function disconnectUser() {
   const chain = createConnectorAPI();
   chain.disconnectUser();
-  localStorage.removeItem("user");
-  localStorage.removeItem("walletconnect");
-  window.location.reload();
+  STORAGE.removeItem("user");
+  STORAGE.removeItem("walletconnect");
+  if (browserContext) window?.location.reload();
 }
 
 /** Reconnect user session */
@@ -108,6 +109,6 @@ async function hydrateUser(account: ReachAccount): Promise<ConnectedUserData> {
 
 /** HELPER | persist user session details */
 async function persistUser(addr: string) {
-  if (localStorage.getItem("walletconnect")) return;
-  localStorage.setItem("user", addr);
+  if (STORAGE.getItem("walletconnect")) return;
+  STORAGE.setItem("user", addr);
 }

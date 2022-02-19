@@ -8,8 +8,9 @@ const PROVIDERS: { [x: string]: "TestNet" | "MainNet" } = {
 const NETWORK_STORAGE_KEY = "active-chain";
 const NETWORK_PROVIDER_KEY = "active-prov";
 const noop = () => null;
-const STORAGE: Storage = window
-  ? window.localStorage
+export const browserContext = Boolean(window);
+export const STORAGE: Storage = browserContext
+  ? window?.localStorage
   : {
       clear: noop,
       getItem: noop,
