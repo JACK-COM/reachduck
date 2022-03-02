@@ -1,6 +1,6 @@
-import { selectBlockchainNetwork } from "..";
+import { NetworkProvider, selectBlockchainNetwork } from "..";
 import { getBlockchain } from "../storage";
-import { NetworkData, ReachToken } from "../types";
+import { NetworkData, ReachToken, ChainSymbol, NetworksMap } from "../types";
 import ALGO from "./ALGO";
 
 const NOOP = (connector: string): ConnectorInterface => {
@@ -27,8 +27,6 @@ const CHAINS = {
   ALGO,
   ETH: NOOP("ETH"),
 };
-export type ChainSymbol = keyof typeof CHAINS;
-export type NetworksMap = Record<ChainSymbol, NetworkData>;
 
 /** Interface for blockchain-specific helpers */
 export type ConnectorInterface = {
@@ -77,10 +75,14 @@ export function listSupportedNetworks(): NetworkData[] {
  */
 export function createConnectorAPI(
   chain?: string | ChainSymbol,
-  network?: string
+  network?: NetworkProvider
 ): ConnectorInterface {
   const key = (chain || getBlockchain()) as ChainSymbol;
   if (!CHAINS[key]) return NOOP(key);
   if (network) selectBlockchainNetwork(network);
   return CHAINS[key] as ConnectorInterface;
+}
+
+export function isSupportedNetwork(key: ChainSymbol) {
+  return Boolean(CHAINS[key]);
 }

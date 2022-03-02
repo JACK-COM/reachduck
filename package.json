@@ -1,6 +1,6 @@
 {
   "name": "@jackcom/reachduck",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A front-end helper for your DApp.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -33,7 +33,10 @@
     "@babel/core": "^7.17.0",
     "@babel/preset-env": "^7.16.11",
     "@babel/preset-typescript": "^7.16.7",
+    "@randlabs/myalgo-connect": "^1.1.2",
     "@types/jest": "^27.4.0",
+    "algorand-walletconnect-qrcode-modal": "^1.6.1",
+    "algosdk": "^1.13.1",
     "babel-jest": "^27.5.0",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^10.2.1",
@@ -50,9 +53,6 @@
   },
   "dependencies": {
     "@jackcom/raphsducks": "^1.1.6",
-    "@randlabs/myalgo-connect": "^1.1.2",
-    "@walletconnect/client": "^1.7.1",
-    "algorand-walletconnect-qrcode-modal": "^1.6.1",
-    "algosdk": "^1.13.1"
+    "@walletconnect/client": "^1.7.1"
   }
 }

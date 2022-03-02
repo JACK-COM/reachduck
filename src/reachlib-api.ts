@@ -1,8 +1,11 @@
 import * as T from "./types";
-import { ChainSymbol, NETWORKS } from "./networks/index.networks";
-import { trimByteString, formatNumberShort } from "./utils/helpers";
-import { getBlockchain, selectBlockchain } from "./storage";
-import { selectBlockchainNetwork } from ".";
+import { NETWORKS } from "./networks/index.networks";
+import { trimByteString, formatUnsafeNumber } from "./utils/helpers";
+import {
+  getBlockchain,
+  selectBlockchain,
+  selectBlockchainNetwork,
+} from "./storage";
 
 type LoadStdlibFn = { (args: any): any };
 
@@ -30,13 +33,10 @@ export function formatAddress(acc: T.ReachAccount) {
 
 /** `@reach-helper` Optionally-abbreviated currency formatter (e.g. `fn(1000)` -> `1000` || `1K` ). Expects `amt` to be in atomic unit for network */
 export function formatCurrency(amt: any, decs?: number, abbr = false): string {
-  const { formatWithDecimals, lt } = createReachAPI();
+  const { formatWithDecimals } = createReachAPI();
   const decimals = parseNetworkDecimals(Number(decs));
   const reachFmt = formatWithDecimals(amt, decimals);
-
-  return abbr === true && lt(amt, Number.MAX_SAFE_INTEGER)
-    ? formatNumberShort(Number(reachFmt))
-    : reachFmt;
+  return abbr ? formatUnsafeNumber(reachFmt) : reachFmt;
 }
 
 /** `@reach-helper` Optionally opt-in in to assets */
@@ -55,8 +55,8 @@ export async function optInToAsset(acc: T.ReachAccount, tokenId: any) {
  */
 export function loadReach(
   loadStdlibFn: LoadStdlibFn,
-  chain?: ChainSymbol | string,
-  network: "TestNet" | "MainNet" = "TestNet"
+  chain?: T.ChainSymbol,
+  network: T.NetworkProvider = "TestNet"
 ) {
   if (reach?.connector) {
     console.warn("Reach already instantiated");
@@ -134,6 +134,6 @@ function formatReachToken(tokenId: any, amount: any, data: any): T.ReachToken {
 }
 
 function parseNetworkDecimals(decimals?: number) {
-  const key = createReachAPI().connector as ChainSymbol;
+  const key = createReachAPI().connector as T.ChainSymbol;
   return isNaN(Number(decimals)) ? NETWORKS[key].decimals || 0 : decimals;
 }
