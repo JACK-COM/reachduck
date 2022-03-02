@@ -1,7 +1,7 @@
 import { ReachAccount, LibFallbackOpts } from "./types";
 import { createReachAPI } from "./reachlib-api";
 import { createConnectorAPI } from "./networks/index.networks";
-import { browserContext, STORAGE } from ".";
+import { isBrowser, STORAGE } from "./storage";
 
 /** Configure stdlib wallet fallback */
 function setLibFallback(opts: LibFallbackOpts) {
@@ -65,7 +65,7 @@ export function disconnectUser() {
   chain.disconnectUser();
   STORAGE.removeItem("user");
   STORAGE.removeItem("walletconnect");
-  if (browserContext) window?.location.reload();
+  if (isBrowser()) window?.location.reload();
 }
 
 /** Reconnect user session */

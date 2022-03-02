@@ -9,6 +9,8 @@ export type BackendModule = Record<string, any>;
 /** Reach StdLib instance */
 export type BigNumber = any;
 
+export type ChainSymbol = "ETH" | "ALGO";
+
 /** Reach Contract `API` Function(s) */
 export type CtcFn = { (...args: any[]): any | Promise<any> };
 
@@ -36,7 +38,9 @@ export type NetworkData = {
   decimals?: number;
 };
 
-export type NetworkProvider = string;
+export type NetworkProvider = "TestNet" | "BetaNet" | "MainNet";
+
+export type NetworksMap = Record<ChainSymbol, NetworkData>;
 
 export type ReachToken = {
   id: number | string;
