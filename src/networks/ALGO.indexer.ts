@@ -1,12 +1,11 @@
 import { Indexer } from "algosdk";
-import { ReachToken } from "../types";
+import { ReachToken, NetworkProvider } from "../types";
 
 type TxnSearchOpts = {
   amount?: number;
   minRound?: number;
   note?: string;
 };
-type AlgoProviderNetwork = "MainNet" | "TestNet" | "BetaNet";
 type AlgoProviderEnv = {
   ALGO_INDEXER_PORT?: string;
   ALGO_INDEXER_SERVER: string;
@@ -19,10 +18,10 @@ type AlgoProviderEnv = {
 };
 
 /** @private Algorand Indexer instance (for querying the chain) */
-const networks: AlgoProviderNetwork[] = ["TestNet", "BetaNet", "MainNet"];
+const networks: NetworkProvider[] = ["TestNet", "BetaNet", "MainNet"];
 const TK = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 let indexer: Indexer;
-let network: AlgoProviderNetwork = "TestNet";
+let network: NetworkProvider = "TestNet";
 let reachProviderEnv: AlgoProviderEnv;
 
 /**
@@ -73,11 +72,9 @@ export async function fetchAssetById(
 
 /** Generate a `providerEnv` for stdlib */
 export function getProviderEnv(
-  providerNetwork: AlgoProviderNetwork = "TestNet"
+  net: NetworkProvider = "TestNet"
 ): AlgoProviderEnv {
-  const valid = networks.includes(providerNetwork)
-    ? providerNetwork
-    : networks[0];
+  const valid = networks.includes(net) ? net : networks[0];
   if (!reachProviderEnv) resetProvider(valid);
   return reachProviderEnv;
 }
@@ -160,7 +157,7 @@ function formatAssetMetadata(
     amount,
     decimals: params.decimals,
     name: params.name || `(${id})`,
-    symbol: params['unit-name'] || `#${id}`,
+    symbol: params["unit-name"] || `#${id}`,
     supply: params.total,
     url: params.url,
     verified: params.verified || false,
@@ -168,7 +165,7 @@ function formatAssetMetadata(
 }
 
 /** Store initial provider settings */
-function resetProvider(prov: AlgoProviderNetwork = "TestNet") {
+function resetProvider(prov: NetworkProvider = "TestNet") {
   const key = prov.toLowerCase();
   network = prov;
   reachProviderEnv = {

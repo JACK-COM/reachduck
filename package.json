@@ -1,6 +1,6 @@
 {
   "name": "@jackcom/reachduck",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A front-end helper for your DApp.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -53,6 +53,7 @@
   },
   "dependencies": {
     "@jackcom/raphsducks": "^1.1.6",
-    "@walletconnect/client": "^1.7.1"
+    "@walletconnect/client": "^1.7.1",
+    "@walletconnect/qrcode-modal": "^1.7.3"
   }
 }

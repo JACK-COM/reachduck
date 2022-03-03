@@ -1,6 +1,6 @@
 import * as T from "./types";
 import { NETWORKS } from "./networks/index.networks";
-import { trimByteString, formatUnsafeNumber } from "./utils/helpers";
+import { trimByteString, formatNumberShort } from "./utils/helpers";
 import {
   getBlockchain,
   selectBlockchain,
@@ -36,7 +36,7 @@ export function formatCurrency(amt: any, decs?: number, abbr = false): string {
   const { formatWithDecimals } = createReachAPI();
   const decimals = parseNetworkDecimals(Number(decs));
   const reachFmt = formatWithDecimals(amt, decimals);
-  return abbr ? formatUnsafeNumber(reachFmt) : reachFmt;
+  return abbr ? formatNumberShort(reachFmt) : reachFmt;
 }
 
 /** `@reach-helper` Optionally opt-in in to assets */
@@ -119,12 +119,12 @@ export async function tokenMetadata(
 function formatReachToken(tokenId: any, amount: any, data: any): T.ReachToken {
   const id = parseAddress(tokenId);
   const fallbackName = `Asset #${id}`;
-  const fallbackSymbol = `#${id}`;
+  const symbol = data.symbol ? trimByteString(data.symbol) : `#${id}`;
 
   return {
     id: parseAddress(tokenId),
     name: trimByteString(data.name) || fallbackName,
-    symbol: trimByteString((data.symbol || fallbackSymbol).toUpperCase()),
+    symbol,
     url: trimByteString(data.url),
     amount,
     supply: data.supply,

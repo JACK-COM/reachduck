@@ -1,5 +1,5 @@
 import MyAlgoConnect from "@randlabs/myalgo-connect";
-import { ConnectorInterface, getBlockchainNetwork } from "..";
+import { ConnectorInterface, } from "..";
 import {
   fetchAccount,
   fetchAssetById,
@@ -7,7 +7,7 @@ import {
   searchForTransactions,
   searchAssetsByName,
 } from "./ALGO.indexer";
-import { disconnectWC, createWCClient } from "./ALGO.WalletConnect";
+import { disconnectWC } from "./WalletConnect";
 
 export const AlgoInterface: ConnectorInterface = {
   disconnectUser: disconnectWC,
@@ -15,7 +15,6 @@ export const AlgoInterface: ConnectorInterface = {
   fetchAssetById,
   searchAssetsByName,
   getProviderEnv,
-  getWalletConnectClientOpts,
   getWebWalletClientOpts,
   loadAssets,
   searchForTransactions,
@@ -47,14 +46,6 @@ async function loadAssets(addr: string) {
   } else updates.assets = [];
 
   return updates;
-}
-
-function getWalletConnectClientOpts() {
-  return {
-    WalletConnect: function () {
-      return createWCClient();
-    },
-  };
 }
 
 /** Enable `MyAlgoConnect` use by stdlib */
