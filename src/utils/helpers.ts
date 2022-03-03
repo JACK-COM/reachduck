@@ -1,5 +1,48 @@
 export const noOp = () => null;
 
+export const isBrowser = new Function(
+  "try { return this === window } catch(e) { return false; }"
+);
+
+let STORE: Storage;
+/**
+ * Generate a unified pointer to `localStorage`. Returns an in-memory
+ * fallback object for non-browser contexts */
+export function getStorage() {
+  if (!STORE) {
+    STORE = isBrowser() ? window?.localStorage : createMemoryStorage();
+  }
+
+  return STORE;
+}
+
+/** Create a key-value stub for localStorage */
+function createMemoryStorage(): Storage {
+  let data: Record<string, any> = {};
+
+  return {
+    clear: () => (data = {}),
+
+    getItem: (key: string) => data[key] || null,
+
+    key(keyIndex: number) {
+      return Object.keys(data)[keyIndex] || null;
+    },
+
+    get length() {
+      return Object.keys(data).length;
+    },
+
+    removeItem(key: string) {
+      delete data[key];
+    },
+
+    setItem(key: string, value: any) {
+      data[key] = value;
+    },
+  };
+}
+
 // Generate a number abbreviation
 export function abbrevNumber(numOfGroups: number) {
   if (Number.isNaN(numOfGroups) || !numOfGroups) return "";
@@ -18,7 +61,8 @@ export function checkVersionChanged(
   currentVersion: string | number,
   APP_VERSION_KEY = "app-version"
 ) {
-  const lastVersion = localStorage.getItem(APP_VERSION_KEY);
+  const storage = getStorage();
+  const lastVersion = storage.getItem(APP_VERSION_KEY);
   return currentVersion !== lastVersion;
 }
 
@@ -27,7 +71,7 @@ export function setAppVersion(
   version: string | number,
   APP_VERSION_KEY = "app-version"
 ) {
-  localStorage.setItem(APP_VERSION_KEY, version.toString());
+  getStorage().setItem(APP_VERSION_KEY, version.toString());
   return version;
 }
 
@@ -49,16 +93,8 @@ export function formatCurrencyLocale(val: number, locale?: any) {
   return intlFmt.format(val);
 }
 
-/** Abbreviated currency formatter (e.g. `fn(1000)` -> `1K` ) */
-export function formatNumberShort(val: number | bigint, decimalPlaces = 2) {
-  return formatUnsafeNumber(val.toString(), decimalPlaces);
-}
-
-/**
- * Abbreviate arbitrarily large numbers or number strings. Falls back to
- * `formatNumberShort` if the value is small enough.
- */
-export function formatUnsafeNumber(val: string | number, round = 2) {
+/** Format arbitrarily large numbers or number strings. (e.g. `fn(1000)` -> `1K` ) */
+export function formatNumberShort(val: string | number | bigint, round = 2) {
   if (isNaN(Number(val))) return "";
 
   const parts = val.toString().split(".");
@@ -114,23 +150,6 @@ export function truncateString(str: string, pad = 6): string {
   const { length } = str;
   const start = str.substring(0, pad);
   return `${start}...${str.substring(length - pad, length)}`;
-}
-
-/** Generates a string with the decimal value of the parsed number in `parts` */
-function getDecimals(parts: Intl.NumberFormatPart[], places = 2) {
-  if (!places) return "";
-
-  const ints: Intl.NumberFormatPart[] = [];
-  const fractions: Intl.NumberFormatPart[] = [];
-  parts.forEach((part) => {
-    const { type } = part;
-    if (type === "integer") ints.push(part);
-    else if (type === "fraction") fractions.push(part);
-  });
-
-  if (ints.length > 1) return trimDecimals(ints[1].value.substring(0, places));
-  if (fractions.length) return trimDecimals(fractions[0].value);
-  return "";
 }
 
 function trimDecimals(val: string) {

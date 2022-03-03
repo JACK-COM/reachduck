@@ -46,7 +46,7 @@ describe("Helpers → fromMaybe", () => {
 });
 
 describe("Helpers → Number helpers", () => {
-  const { formatNumberShort, formatUnsafeNumber, abbrevNumber } = H;
+  const { formatNumberShort, abbrevNumber } = H;
   it("Abbreviates by the number of groups in the value", () => {
     // Number with '1' group (e.g. 1,234 = value(1), group(234))
     expect(abbrevNumber(1)).toStrictEqual("K");
@@ -63,7 +63,7 @@ describe("Helpers → Number helpers", () => {
     expect(formatNumberShort(1)).toStrictEqual("1");
     expect(formatNumberShort(100)).toStrictEqual("100");
     expect(formatNumberShort(10000)).toStrictEqual("10K");
-    let lg: number | bigint = 1_550_000;
+    let lg: number | bigint | string = 1_550_000;
     expect(formatNumberShort(lg)).toStrictEqual("1.55M");
     expect(formatNumberShort(lg, 1)).toStrictEqual("1.5M");
     lg *= 1000;
@@ -76,30 +76,28 @@ describe("Helpers → Number helpers", () => {
     expect(formatNumberShort(lg)).toStrictEqual("1.55Se");
     lg = BigInt(lg) * BigInt(lg);
     expect(formatNumberShort(lg)).toStrictEqual("2.4!");
-  });
 
-  it("Truncates a number string", () => {
-    expect(formatUnsafeNumber(".12345")).toStrictEqual("0.123");
-    expect(formatUnsafeNumber("1")).toStrictEqual("1");
-    expect(formatUnsafeNumber("1.1")).toStrictEqual("1.1");
-    expect(formatUnsafeNumber("100")).toStrictEqual("100");
-    expect(formatUnsafeNumber("100.1")).toStrictEqual("100.1");
-    expect(formatUnsafeNumber("10000")).toStrictEqual("10K");
-    expect(formatUnsafeNumber("10000.5959")).toStrictEqual("10K");
-    let lg: any = 1_550_000;
-    expect(formatUnsafeNumber(lg)).toStrictEqual("1.55M");
-    expect(formatUnsafeNumber(lg, 1)).toStrictEqual("1.5M");
+    expect(formatNumberShort(".12345")).toStrictEqual("0.123");
+    expect(formatNumberShort("1")).toStrictEqual("1");
+    expect(formatNumberShort("1.1")).toStrictEqual("1.1");
+    expect(formatNumberShort("100")).toStrictEqual("100");
+    expect(formatNumberShort("100.1")).toStrictEqual("100.1");
+    expect(formatNumberShort("10000")).toStrictEqual("10K");
+    expect(formatNumberShort("10000.5959")).toStrictEqual("10K");
+    lg = 1_550_000;
+    expect(formatNumberShort(lg)).toStrictEqual("1.55M");
+    expect(formatNumberShort(lg, 1)).toStrictEqual("1.5M");
     lg *= 1000;
     lg = lg.toString();
-    expect(formatUnsafeNumber(lg)).toStrictEqual("1.55B");
+    expect(formatNumberShort(lg)).toStrictEqual("1.55B");
     lg = BigInt(lg) * BigInt(1000000);
-    expect(formatUnsafeNumber(lg)).toStrictEqual("1.55Qa");
+    expect(formatNumberShort(lg)).toStrictEqual("1.55Qa");
     lg = BigInt(lg) * BigInt(1000000);
-    expect(formatUnsafeNumber(lg)).toStrictEqual("1.55Si");
+    expect(formatNumberShort(lg)).toStrictEqual("1.55Si");
     lg = BigInt(lg) * BigInt(1000);
-    expect(formatUnsafeNumber(lg)).toStrictEqual("1.55Se");
+    expect(formatNumberShort(lg)).toStrictEqual("1.55Se");
     lg = BigInt(lg) * BigInt(lg);
-    expect(formatUnsafeNumber(lg)).toStrictEqual("2.4!");
+    expect(formatNumberShort(lg)).toStrictEqual("2.4!");
   });
 });
 

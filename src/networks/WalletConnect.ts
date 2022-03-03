@@ -1,6 +1,7 @@
 import createState from "@jackcom/raphsducks";
 import WalletConnect from "@walletconnect/client";
-import QRCodeModal from "algorand-walletconnect-qrcode-modal";
+import QRCodeModal from "@walletconnect/qrcode-modal";
+import AlgoQRCodeModal from "algorand-walletconnect-qrcode-modal";
 
 const WCState = createState({
   connected: false,
@@ -8,9 +9,11 @@ const WCState = createState({
 });
 
 let connected: Signal;
+let connectedTo: string | undefined;
 
-export function createWCClient() {
+export function createWCClient(to = "ALGO") {
   connected = new Signal();
+  connectedTo = to;
   return { getAddr, signTxns };
 }
 
@@ -42,6 +45,7 @@ export function disconnectWC() {
   const { client } = WCState.getState();
   if (client) client.killSession();
   connected = new Signal();
+  connectedTo = undefined;
   WCState.reset();
 }
 
@@ -53,9 +57,10 @@ const onConnect = (err: any, _payload: any) => {
 async function ensureWC() {
   const { client } = WCState.getState();
   if (!client) {
+    const qrcodeModal = connectedTo === "ALGO" ? AlgoQRCodeModal : QRCodeModal;
     const newclient = new WalletConnect({
       bridge: "https://bridge.walletconnect.org",
-      qrcodeModal: QRCodeModal,
+      qrcodeModal,
     });
     newclient.on("session_update", onConnect);
     newclient.on("connect", onConnect);

@@ -1,13 +1,13 @@
 import { ReachAccount, LibFallbackOpts } from "./types";
 import { createReachAPI } from "./reachlib-api";
 import { createConnectorAPI } from "./networks/index.networks";
-import { isBrowser, STORAGE } from "./storage";
+import { getStorage, isBrowser } from "./utils/helpers";
 
 /** Configure stdlib wallet fallback */
-function setLibFallback(opts: LibFallbackOpts) {
+function setLibFallback(opts?: LibFallbackOpts) {
   const { walletFallback, setWalletFallback, connector } = createReachAPI();
   const defaultEnv = createConnectorAPI().getProviderEnv(connector);
-  const providerEnv = opts.providerEnv || defaultEnv;
+  const providerEnv = opts?.providerEnv || defaultEnv;
 
   setWalletFallback(walletFallback({ ...opts, providerEnv }));
 }
@@ -15,14 +15,14 @@ function setLibFallback(opts: LibFallbackOpts) {
 /** Configure `stdlib` to fallback to chain's web wallet provider */
 export function useWebWallet() {
   const chain = createConnectorAPI();
-  STORAGE.removeItem("walletconnect");
+  getStorage().removeItem("walletconnect");
   return setLibFallback(chain.getWebWalletClientOpts());
 }
 
 /** Configure `stdlib` to fallback to `WalletConnect` as wallet provider */
 export function useWalletConnect() {
+  getStorage().removeItem("user");
   const chain = createConnectorAPI();
-  STORAGE.removeItem("user");
   return setLibFallback(chain.getWalletConnectClientOpts());
 }
 
@@ -44,9 +44,10 @@ export function checkSessionExists(): {
   addr: string | null;
 } {
   let addr = null;
+  const storage = getStorage()
   const [wc, myalgo]: any[] = [
-    STORAGE.getItem("walletconnect"),
-    STORAGE.getItem("user"),
+    storage.getItem("walletconnect"),
+    storage.getItem("user"),
   ];
 
   if (Array.isArray(wc?.accounts)) addr = wc.accounts[0];
@@ -63,8 +64,9 @@ export function checkSessionExists(): {
 export function disconnectUser() {
   const chain = createConnectorAPI();
   chain.disconnectUser();
-  STORAGE.removeItem("user");
-  STORAGE.removeItem("walletconnect");
+  const storage = getStorage()
+  storage.removeItem("user");
+  storage.removeItem("walletconnect");
   if (isBrowser()) window?.location.reload();
 }
 
@@ -109,6 +111,7 @@ async function hydrateUser(account: ReachAccount): Promise<ConnectedUserData> {
 
 /** HELPER | persist user session details */
 async function persistUser(addr: string) {
-  if (STORAGE.getItem("walletconnect")) return;
-  STORAGE.setItem("user", addr);
+  const storage = getStorage()
+  if (storage.getItem("walletconnect")) return;
+  storage.setItem("user", addr);
 }

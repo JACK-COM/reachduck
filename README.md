@@ -10,38 +10,41 @@ It was hacked together as a convenience, and the documentation is a courtesy. Pr
 ### 2. You *may* need `@reach-sh/stdlib`
 This package works without reach. If you need the latter, you will need to separately [install it](https://www.npmjs.com/package/@reach-sh/stdlib) in your project, and provide it to this package when necessary, and as described below. 
 
+### 3. The most exemplary efforts have been put forth. 
+Regardless, *expect* errors. And silence (or delayed responses), when you report them.
+
 
 ## Methods
 All methods below are available as individual imports.
 
 ### 1. Working with Blockchain networks
-You can use a predictable API for doing some common things with the underlying chain (except signing transactions). The `ConnectorInterface` (shown below) doesn't depend on an `stdlib` instance, and looks the same regardless of what network you're working with. 
+You can use a predictable API for doing some common things with the underlying chain (except signing transactions). The `NetworkInterface` (shown below) doesn't depend on an `stdlib` instance, and looks the same regardless of what network you're working with. 
 
 #### Blockchain Functions
 Use `createConnectorAPI` to access an object with the following [**helper methods**](#connectorinterface).
 ```typescript
 /** 
- * Returns a `ConnectorInterface` w/ additional chain-specific helpers. 
+ * Returns a `NetworkInterface` w/ additional chain-specific helpers. 
  * Note: not all `network` options are accepted by all chains. Defaults
  * to "ALGO" + "TestNet" if no values are provided.
  */
 function createConnectorAPI(
     chain?: "ALGO" | "ETH",
     network?: "TestNet" | "BetaNet" | "MainNet"
-): ConnectorInterface;
+): NetworkInterface;
 ```
 ##### Example
 
-You can see the methods on [`ConnectorInterface` here](#connectorinterface)
+You can see the methods on [`NetworkInterface` here](#connectorinterface)
 ```typescript
 import { createConnectorAPI } from "@jackcom/reachduck"
 
 // More chains will be supported in the future
-const algorand: ConnectorInterface = createConnectorAPI("ALGO"/* , "TestNet | BetaNet | MainNet" */);
+const algorand: NetworkInterface = createConnectorAPI("ALGO"/* , "TestNet | BetaNet | MainNet" */);
 const assets: Record<string, any> = await algorand.loadAssets("ADR2SOFN...");
 
 // In the future you can also do
-const ethereum: ConnectorInterface = createConnectorAPI("ETH");
+const ethereum: NetworkInterface = createConnectorAPI("ETH");
 const assets: Record<string, any> = await ethereum.loadAssets("0x9f32d4...");
 ```
 
@@ -194,17 +197,21 @@ function listSupportedNetworks(): NetworkData[];
 /* Doesn't do anything */
 function noOp(): null;
 
-/** Store user current network selection for App in `localStorage` */
+/** 
+ * Store user current network selection for App in `localStorage`.
+ * ⚠️ WARNING: May trigger window reload if library is in a browser context */
 function selectBlockchain(network: string): string;
 /**
  * Set network provider preference `MainNet` or `TestNet`.
  * ⚠️ WARNING: Optionally triggers window reload */
 function selectBlockchainNetwork(prov: NetworkProvider, reload = false): string;
 
-/* trims empty bytes from a decoded Byte string */
+/* Trims empty bytes from a decoded Byte string */
 function trimByteString(str: string): string;
 
-/* Shrink an address to `radius`...`radius`-length string */
+/**
+ * Shrink an address to `radius`...`radius`-length string. Default would be
+ * (WXWXWXWXWXWXWXWXWXWXWXWXWXWXWXWX) => "WXWXWX...WXWXWX" */
 function truncateString(acct: string, radius = 6): string;
 ```
 
@@ -220,10 +227,10 @@ type ConnectedUserData = {
 } & Record<string, any>;
 ```
 
-### `ConnectorInterface`
+### `NetworkInterface`
 Returned from `createConnectorAPI()`
 ```typescript
-type ConnectorInterface {
+type NetworkInterface {
     /** Clear any user session details (usually for `WalletConnect`) */
     disconnectUser(): void;
     
@@ -257,12 +264,14 @@ type ConnectorInterface {
 ```
 
 ### `NetworkProvider`
+**Note:** only use `BetaNet` with stdlib on Algorand; it will likely throw an error\
+for others. 
 ```typescript
 type NetworkProvider = "TestNet" | "BetaNet" | "MainNet"
 ```
 
 ## Development
-This is a typescript project. It depends on `Algosdk` and `WalletConnect`.
+This is a typescript project. It depends on a subset of `Algosdk` and `WalletConnect`.
 
 To create a production build:
 

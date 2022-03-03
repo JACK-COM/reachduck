@@ -9,7 +9,7 @@ export type BackendModule = Record<string, any>;
 /** Reach StdLib instance */
 export type BigNumber = any;
 
-export type ChainSymbol = "ETH" | "ALGO";
+export type ChainSymbol = string & ("ETH" | "ALGO");
 
 /** Reach Contract `API` Function(s) */
 export type CtcFn = { (...args: any[]): any | Promise<any> };
@@ -33,12 +33,12 @@ export type LibFallbackOpts = { providerEnv?: any } & Record<string, any>;
 /** `NetworkData` describes single network data-item (for e.g. Ethereum) */
 export type NetworkData = {
   name: string;
-  abbr: string;
+  abbr: ChainSymbol;
   active?: boolean;
   decimals?: number;
 };
 
-export type NetworkProvider = "TestNet" | "BetaNet" | "MainNet";
+export type NetworkProvider = ("TestNet" | "BetaNet" | "MainNet") & string;
 
 export type NetworksMap = Record<ChainSymbol, NetworkData>;
 
@@ -48,7 +48,7 @@ export type ReachToken = {
   amount?: number | any;
   decimals: number;
   supply: string | number;
-  symbol: string;
+  symbol: string | ChainSymbol;
   url: string;
   verified?: boolean;
 };
