@@ -13,7 +13,11 @@ This package works without reach. If you need the latter, you will need to separ
 ### 3. The most exemplary efforts have been put forth. 
 Regardless, *expect* errors. And silence (or delayed responses), when you report them.
 
-## Pages
 
-1. [Methods](./methods.md)
-2. [Types](./types.md)
+---
+
+### Site Menu
+* [Home](/index.md)
+* [Methods](/methods.md)
+* [Types](/types.md)
+---
