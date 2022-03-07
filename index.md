@@ -20,4 +20,5 @@ Regardless, *expect* errors. And silence (or delayed responses), when you report
 * [Home](/index.md)
 * [Methods](/methods.md)
 * [Types](/types.md)
+
 ---
