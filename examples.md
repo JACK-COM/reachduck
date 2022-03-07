@@ -94,12 +94,15 @@ import { createConnectorAPI } from "@jackcom/reachduck"
 const algoTestnet = createConnectorAPI("ALGO", "TestNet");
 const assets = await algoTestnet.loadAssets();
 ```
+
 ---
 
 ### Site Menu
 * [Home](/index.md)
 * [Methods](/methods.md)
 * [Types](/types.md)
+* [Examples](/examples.md)
+
 ---
 
 [Return home](/index.md)
