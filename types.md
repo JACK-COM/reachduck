@@ -53,3 +53,11 @@ for others.
 type NetworkProvider = "TestNet" | "BetaNet" | "MainNet"
 ```
 
+---
+
+### Site Menu
+* [Home](/index.md)
+* [Methods](/methods.md)
+* [Types](/types.md)
+---
+
