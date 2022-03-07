@@ -59,6 +59,7 @@ type NetworkProvider = "TestNet" | "BetaNet" | "MainNet"
 * [Home](/index.md)
 * [Methods](/methods.md)
 * [Types](/types.md)
+* [Examples](/examples.md)
 
 ---
 
