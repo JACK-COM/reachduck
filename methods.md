@@ -333,4 +333,5 @@ function truncateString(acct: string, radius = 6): string;
 * [Home](/index.md)
 * [Methods](/methods.md)
 * [Types](/types.md)
+
 ---
