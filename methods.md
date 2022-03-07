@@ -327,11 +327,13 @@ Shrink an address to `radius`...`radius`-length string. Default would be
 function truncateString(acct: string, radius = 6): string;
 ```
 
+
 ---
 
 ### Site Menu
 * [Home](/index.md)
 * [Methods](/methods.md)
 * [Types](/types.md)
+* [Examples](/examples.md)
 
 ---
