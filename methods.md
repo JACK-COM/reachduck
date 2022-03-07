@@ -38,43 +38,76 @@ All methods below are available as individual imports.
 ## 1. Blockchain networks
 
 #### `createConnectorAPI` 
-Returns a `NetworkInterface` with the following [**helper methods**]().\
+Returns a `ConnectorAPI` with the following helper methods.\
 Note: `BetaNet` **network** option is only accepted by Algorand. Values default to `ALGO` and `TestNet` if none are provided.
 ```typescript
 function createConnectorAPI(
     chain?: "ALGO" | "ETH",
     network?: "TestNet" | "BetaNet" | "MainNet"
-): {
-    /** Clear any user session details (usually for `WalletConnect`) */
-    disconnectUser(): void;
+): NetworkInterface
+```
+
+
+
+##### `NetworkInterface.disconnectUser`
+Clear any additional user session details (usually for `WalletConnect`) 
+```typescript
+NetworkInterface.disconnectUser(): void;
+```
     
-    /** Fetch account details from network */
-    fetchAccount(acc: string | any): any | Promise<any>;
+
+##### `NetworkInterface.fetchAccount`  
+ Fetch account details from network
+```typescript
+NetworkInterface.fetchAccount(acc: string | any): any | Promise<any>;
+```
     
-    /** Fetch an asset/token by its ID from the chain's block explorer */
-    fetchAssetById(assetId: number): any;
+
+##### `NetworkInterface.fetchAssetById`   
+ Fetch an asset/token by its ID from the chain's block explorer 
+```typescript
+NetworkInterface.fetchAssetById(assetId: number): any;
+```
     
-    /** Returns a blockchain-specific configuration for `stdlib` */
-    getProviderEnv(network?: string): void;
+##### `NetworkInterface.getProviderEnv`    
+ Returns a blockchain-specific configuration for `stdlib` */
+```typescript
+NetworkInterface.getProviderEnv(network?: string): void;
+```
+
+##### `NetworkInterface.loadAssets`  
+ Fetch account assets from network 
+```typescript
+NetworkInterface.loadAssets(acc: string | any): any | Promise<ReachToken[]>;
+```
     
-    /** Fetch account assets from network */
-    loadAssets(acc: string | any): any | Promise<ReachToken[]>;
+
+##### `NetworkInterface.getWalletConnectClientOpts`  
+Get a `WalletConnect` client instance 
+```typescript
+NetworkInterface.getWalletConnectClientOpts(): any;
+```
     
-    /** Get a `WalletConnect` client instance */
-    getWalletConnectClientOpts(): any;
     
-    /**
-     * Get an object with a key containing a wallet fallback for `stdlib`.
-     * Defaults to `MyAlgoConnect` on Algorand.
-     */
-    getWebWalletClientOpts(): any;
+
+##### `NetworkInterface.getWebWalletClientOpts`  
+Get an object with a key containing a wallet fallback for `stdlib`. Defaults to `MyAlgoConnect` on Algorand.
+```typescript
+NetworkInterface.getWebWalletClientOpts(): any;
+```
     
-    /** Search for an asset/token by its name. Returns a list */
-    searchAssetsByName(assetName: string): any;
+
+##### `NetworkInterface.searchAssetsByName`
+Search for an asset/token by its name. Returns a list 
+```typescript
+NetworkInterface.searchAssetsByName(assetName: string): any;
+```
     
-    /** Search for transactions for this `addr` */
-    searchForTransactions(addr: string, opts?: any): any;
-}
+
+##### `NetworkInterface.searchForTransactions` 
+Search for transactions for this `addr` 
+```typescript
+NetworkInterface.searchForTransactions(addr: string, opts?: any): any;
 ```
 
 ---
