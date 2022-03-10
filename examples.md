@@ -13,19 +13,11 @@ Some example code for how to use `reachduck`.\
 
 ---
 
-## **`stdlib`:** Instantiating `stdlib`
-
+## **Reach Standard Library:** Creating an **stdlib** instance
+Use `loadReach` where you would use `loadStdlib( ... )`. You'll only want to call this function once! 
 ```typescript
 import { loadStdlib } from "@reach-sh/stdlib"
-import { 
-    connectUser,
-    createReachAPI,
-    loadReach, 
-    useWebWallet
-} from "@jackcom/reachduck"
 
-// Use `loadReach` where you would use `loadStdlib( ... )`
-// Note: you'll only want to use this function once!
 const stdlib = loadReach(loadStdlib/* , "ETH" | "ALGO" */);
 
 // Now you can use it as you normally would
@@ -34,7 +26,7 @@ const account = await stdlib.createAccount()
 
 ---
 
-## **`stdlib`:** Using configured instance 
+## **Reach Standard Library:** Using configured instance 
 
 If you want to access the reach `stdlib` after initializing it, use `createReachAPI`:
 ```typescript
