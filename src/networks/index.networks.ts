@@ -2,11 +2,11 @@ import { NetworkProvider, selectBlockchainNetwork } from "..";
 import { getBlockchain } from "../storage";
 import { NetworkData, ReachToken, ChainSymbol, NetworksMap } from "../types";
 import ALGO from "./ALGO";
-import { createWCClient } from "./WalletConnect";
+import { createWCClient, disconnectWC } from "./WalletConnect";
 
 const CHAINS: Record<ChainSymbol, NetworkInterface> = {
-  ALGO: createInterface("ALGO", ALGO),
-  ETH: createInterface("ETH", {
+  ALGO: makeAPI("ALGO", ALGO),
+  ETH: makeAPI("ETH", {
     getProviderEnv() {
       return { ETH_NET: "ropsten" };
     },
@@ -23,8 +23,8 @@ export type ConnectorInterface = {
   fetchAssetById(assetId: number): any;
   /** Returns a blockchain-specific configuration for `stdlib` */
   getProviderEnv(network?: ChainSymbol | string): void;
-  /** Fetch account assets from network */
-  loadAssets(acc: string | any): any | Promise<ReachToken[]>;
+  /** Fetch account assets from network. Optionally takes a list of assets addresses */
+  loadAssets(acc: string | any, assets?: string[]): any | Promise<ReachToken[]>;
   /**
    * Get an object with a key containing a wallet fallback for `stdlib`.
    * Defaults to `MyAlgoConnect` on Algorand.
@@ -66,7 +66,7 @@ export function createConnectorAPI(
   network?: NetworkProvider
 ): NetworkInterface {
   const key = (chain || getBlockchain()) as ChainSymbol;
-  if (!CHAINS[key]) return createInterface(key);
+  if (!CHAINS[key]) return makeAPI(key);
   if (network) selectBlockchainNetwork(network);
   return CHAINS[key];
 }
@@ -79,7 +79,7 @@ export function isSupportedNetwork(key: ChainSymbol) {
  * Create a default `NetworkInterface` object that can be overridden
  * with chain-specific functions
  */
-function createInterface(
+function makeAPI(
   chain: string & ChainSymbol,
   overrides: Partial<ConnectorInterface> = {}
 ): NetworkInterface {
@@ -87,7 +87,7 @@ function createInterface(
   const unImpl = (m: string) => console.log(`Unsupported ${chain} call "${m}"`);
 
   return {
-    disconnectUser: () => unImpl("disconnectUser"),
+    disconnectUser: disconnectWC,
     fetchAccount: () => unImpl("fetchAccount"),
     fetchAssetById: () => unImpl("fetchAssetById"),
     getProviderEnv: () => ({}),
