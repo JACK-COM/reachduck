@@ -1,101 +1,87 @@
-import createState from "@jackcom/raphsducks";
 import WalletConnect from "@walletconnect/client";
-import QRCodeModal from "@walletconnect/qrcode-modal";
 import AlgoQRCodeModal from "algorand-walletconnect-qrcode-modal";
 
-const WCState = createState({
-  connected: false,
-  client: null as null | WalletConnect,
-});
-
-let connected: Signal;
+let client: WalletConnect | undefined;
+let ready: WCReady;
 let connectedTo: string | undefined;
 
 export function createWCClient(to = "ALGO") {
-  connected = new Signal();
+  ready = new WCReady();
   connectedTo = to;
   return { getAddr, signTxns };
 }
 
-class Signal {
-  p: Promise<boolean>;
-  r: (a: boolean) => void;
+class WCReady {
+  promise: Promise<boolean>;
+  resolve: (a: boolean) => void;
 
   constructor() {
-    this.r = (a) => {
+    this.resolve = (a) => {
       void a;
       throw new Error(`signal never initialized`);
     };
     const me = this;
-    this.p = new Promise((resolve) => {
-      me.r = resolve;
+    this.promise = new Promise((resolve) => {
+      me.resolve = resolve;
     });
   }
 
   wait() {
-    return this.p;
+    return this.promise;
   }
 
   notify() {
-    this.r(true);
+    this.resolve(true);
   }
 }
 
 export function disconnectWC() {
-  const { client } = WCState.getState();
   if (client) client.killSession();
-  connected = new Signal();
+  ready = new WCReady();
   connectedTo = undefined;
-  WCState.reset();
+  client = undefined;
 }
 
 const onConnect = (err: any, _payload: any) => {
   if (err) throw err;
-  connected.notify();
+  ready.notify();
 };
 
 async function ensureWC() {
-  const { client } = WCState.getState();
   if (!client) {
-    const qrcodeModal = connectedTo === "ALGO" ? AlgoQRCodeModal : QRCodeModal;
+    const qrcodeModal = AlgoQRCodeModal;
     const newclient = new WalletConnect({
       bridge: "https://bridge.walletconnect.org",
       qrcodeModal,
     });
     newclient.on("session_update", onConnect);
     newclient.on("connect", onConnect);
-    WCState.client(newclient);
+    client = newclient;
   }
 }
 
 async function ensureSession() {
   await ensureWC();
-  const { client } = WCState.getState();
   if (!client?.connected) {
     await client?.createSession();
-  } else {
-    connected.notify();
-  }
+  } else ready.notify();
 }
 
 async function getAddr(): Promise<string> {
   await ensureSession();
-  await connected.wait();
-  const { client } = WCState.getState();
+  await ready.wait();
   const accts = client?.accounts || [""];
   return accts[0];
 }
 
 async function signTxns(txns: string[]): Promise<string[]> {
   await ensureSession();
-  const req = {
-    method: "algo_signTxn",
-    params: [txns.map((txn) => ({ txn }))],
-  };
 
   try {
-    const { client } = WCState.getState();
-    return await client?.sendCustomRequest(req);
+    return await client?.sendCustomRequest({
+      method: "algo_signTxn",
+      params: [txns.map((txn) => ({ txn }))],
+    });
   } catch (e: any) {
     throw e;
   }

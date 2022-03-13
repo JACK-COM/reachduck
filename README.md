@@ -5,7 +5,7 @@ Can optionally be paired with (unaffiliated) [reach `stdlib`](https://www.npmjs.
 
 ## CAVEAT EMPTOR
 ### 1. This library is *extremely* in Alpha-status. 
-It was hacked together as a convenience, and the documentation is a courtesy. Proceed only if you know exactly what you are doing. 
+It was hacked together as a convenience, and the documentation is a courtesy. The API may change without warning. Proceed only if you know exactly what you are doing. 
 
 ### 2. You *may* need `@reach-sh/stdlib`
 This package works without reach. If you need the latter, you will need to separately [install it](https://www.npmjs.com/package/@reach-sh/stdlib) in your project, and provide it to this package when necessary, and as described below. 
@@ -14,6 +14,10 @@ This package works without reach. If you need the latter, you will need to separ
 Regardless, *expect* errors. And silence (or delayed responses), when you report them.
 
 
+---
+## Documentation
+Documentation has moved to a dedicated [**Github pages site**](https://jack-com.github.io/reachduck/). Please report any issues or missing documentation by creating a [**github issue**](https://github.com/JACK-COM/reachduck/issues) in the repo. 
+
 ## Methods
 All methods below are available as individual imports.
 
@@ -21,7 +25,7 @@ All methods below are available as individual imports.
 You can use a predictable API for doing some common things with the underlying chain (except signing transactions). The `NetworkInterface` (shown below) doesn't depend on an `stdlib` instance, and looks the same regardless of what network you're working with. 
 
 #### Blockchain Functions
-Use `createConnectorAPI` to access an object with the following [**helper methods**](#connectorinterface).
+Use `createConnectorAPI` to access an object with the following helper methods.
 ```typescript
 /** 
  * Returns a `NetworkInterface` w/ additional chain-specific helpers. 
@@ -33,19 +37,40 @@ function createConnectorAPI(
     network?: "TestNet" | "BetaNet" | "MainNet"
 ): NetworkInterface;
 ```
-##### Example
-
-You can see the methods on [`NetworkInterface` here](#connectorinterface)
+#### `NetworkInterface`
+Returned from `createConnectorAPI()`
 ```typescript
-import { createConnectorAPI } from "@jackcom/reachduck"
-
-// More chains will be supported in the future
-const algorand: NetworkInterface = createConnectorAPI("ALGO"/* , "TestNet | BetaNet | MainNet" */);
-const assets: Record<string, any> = await algorand.loadAssets("ADR2SOFN...");
-
-// In the future you can also do
-const ethereum: NetworkInterface = createConnectorAPI("ETH");
-const assets: Record<string, any> = await ethereum.loadAssets("0x9f32d4...");
+type NetworkInterface {
+    /** Clear any user session details (usually for `WalletConnect`) */
+    disconnectUser(): void;
+    
+    /** Fetch account details from network */
+    fetchAccount(acc: string | any): any | Promise<any>;
+    
+    /** Fetch an asset/token by its ID from the chain's block explorer */
+    fetchAssetById(assetId: number): any;
+    
+    /** Returns a blockchain-specific configuration for `stdlib` */
+    getProviderEnv(network?: string): void;
+    
+    /** Fetch account assets from network */
+    loadAssets(acc: string | any): any | Promise<ReachToken[]>;
+    
+    /** Get a `WalletConnect` client instance */
+    getWalletConnectClientOpts(): any;
+    
+    /**
+     * Get an object with a key containing a wallet fallback for `stdlib`.
+     * Defaults to `MyAlgoConnect` on Algorand.
+     */
+    getWebWalletClientOpts(): any;
+    
+    /** Search for an asset/token by its name. Returns a list */
+    searchAssetsByName(assetName: string): any;
+    
+    /** Search for transactions for this `addr` */
+    searchForTransactions(addr: string, opts?: any): any;
+}
 ```
 
 ### 2. Working with Stdlib 
@@ -59,7 +84,7 @@ function loadReach(
     loadStdlibFn: (args: any) => ReachStdLib,
     chain?: string,
     network?: "TestNet" | "MainNet"
-): boolean;
+): ReachStdLib;
 
 /* Returns your configured `stdlib` instance. Ensure you have called `loadReach( loadStdlib )` at least once before using this function. */
 function createReachAPI(): ReachStdLib;
@@ -84,41 +109,6 @@ function tokenMetadata(token: any, acc: ReachAccount): Promise<ReachToken>;
 
 /** Opt-in in to assets */
 function optInToAsset(acc: T.ReachAccount, tokenId: any): Promise<boolean>;
-```
-##### Example
-
-```typescript
-import { loadStdlib } from "@reach-sh/stdlib"
-import { 
-    connectUser,
-    createReachAPI,
-    loadReach, 
-    useWebWallet
-} from "@jackcom/reachduck"
-
-// Use `loadReach` where you would use `loadStdlib( ... )`
-// Note: you'll only want to use this function once!
-loadReach(loadStdlib/* , "ETH" | "ALGO" */);
-
-// configure stdlib to use web wallet fallback. Currently
-// defaults to `MyAlgo` for Algorand
-useWebWallet(); 
-```
-
-The library has loaded your `stdlib` instance: no wallet fallback is set.
-Now use `createReachAPI` access the `stdlib` instance anywhere in your code:
-
-```typescript
-const stdlib = createReachAPI()
-
-// You can create an account using `stdlib`
-const acc = await stdlib.createAccount()
-
-// or attempt toconnect a user and get back a predictable object.
-// userdata.account will be a `networkAccount` instance from stdlib
-const userdata = await connectUser(); 
-console.log(userdata); 
-    // -> { account: { ... }, address: "XXX...", balance: "...", ...   }
 ```
 
 ### Session Management
@@ -215,60 +205,6 @@ function trimByteString(str: string): string;
 function truncateString(acct: string, radius = 6): string;
 ```
 
-## Types
-
-### `ConnectedUserData`
-```typescript
-/* Response object from 'connectUser' and 'reconnectUser' */
-type ConnectedUserData = {
-    account: ReachAccount;
-    address: string;
-    balance: string;
-} & Record<string, any>;
-```
-
-### `NetworkInterface`
-Returned from `createConnectorAPI()`
-```typescript
-type NetworkInterface {
-    /** Clear any user session details (usually for `WalletConnect`) */
-    disconnectUser(): void;
-    
-    /** Fetch account details from network */
-    fetchAccount(acc: string | any): any | Promise<any>;
-    
-    /** Fetch an asset/token by its ID from the chain's block explorer */
-    fetchAssetById(assetId: number): any;
-    
-    /** Returns a blockchain-specific configuration for `stdlib` */
-    getProviderEnv(network?: string): void;
-    
-    /** Fetch account assets from network */
-    loadAssets(acc: string | any): any | Promise<ReachToken[]>;
-    
-    /** Get a `WalletConnect` client instance */
-    getWalletConnectClientOpts(): any;
-    
-    /**
-     * Get an object with a key containing a wallet fallback for `stdlib`.
-     * Defaults to `MyAlgoConnect` on Algorand.
-     */
-    getWebWalletClientOpts(): any;
-    
-    /** Search for an asset/token by its name. Returns a list */
-    searchAssetsByName(assetName: string): any;
-    
-    /** Search for transactions for this `addr` */
-    searchForTransactions(addr: string, opts?: any): any;
-}
-```
-
-### `NetworkProvider`
-**Note:** only use `BetaNet` with stdlib on Algorand; it will likely throw an error\
-for others. 
-```typescript
-type NetworkProvider = "TestNet" | "BetaNet" | "MainNet"
-```
 
 ## Development
 This is a typescript project. It depends on a subset of `Algosdk` and `WalletConnect`.

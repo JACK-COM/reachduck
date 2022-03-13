@@ -1,5 +1,4 @@
 import MyAlgoConnect from "@randlabs/myalgo-connect";
-import { ConnectorInterface, } from "..";
 import {
   fetchAccount,
   fetchAssetById,
@@ -7,10 +6,8 @@ import {
   searchForTransactions,
   searchAssetsByName,
 } from "./ALGO.indexer";
-import { disconnectWC } from "./WalletConnect";
 
-export const AlgoInterface: ConnectorInterface = {
-  disconnectUser: disconnectWC,
+export const AlgoInterface = {
   fetchAccount: getAccount,
   fetchAssetById,
   searchAssetsByName,
