@@ -10,9 +10,15 @@ It was hacked together as a convenience, and the documentation is a courtesy. Th
 ### 2. You *may* need `@reach-sh/stdlib`
 This package works without reach. If you need the latter, you will need to separately [install it](https://www.npmjs.com/package/@reach-sh/stdlib) in your project, and provide it to this package when necessary, and as described below. 
 
-### 3. The most exemplary efforts have been put forth. 
+
+### 4. The most exemplary efforts have been put forth. 
 Regardless, *expect* errors. And silence (or delayed responses), when you report them.
 
+
+## Breaking Change Notes
+> Version `0.2.0` drops support for `WalletConnect` and `MyAlgo` wrappers.\
+> This removes both `useWebWallet()` and `useWalletConnect()` functionality. 
+> Please continue to rely on `stdlib` as shown in their documentation.
 
 ---
 ## Documentation
@@ -41,9 +47,6 @@ function createConnectorAPI(
 Returned from `createConnectorAPI()`
 ```typescript
 type NetworkInterface {
-    /** Clear any user session details (usually for `WalletConnect`) */
-    disconnectUser(): void;
-    
     /** Fetch account details from network */
     fetchAccount(acc: string | any): any | Promise<any>;
     
@@ -121,8 +124,8 @@ function optInToAsset(acc: T.ReachAccount, tokenId: any): Promise<boolean>;
 function checkSessionExists(): { exists: boolean; isWCSession: boolean; addr: string | null;};
 
 /** 
- * Begin a session with a user's wallet of choice. Make sure to call 
- * `useWebWallet` or `useWalletConnect` before calling this function, 
+ * Begin a session with a user's wallet of choice. Make sure to configure 
+ * stdlib to use either MyAlgo or WalletConnect before calling this function, 
  * as it will get the user to authenticate using a wallet (and will
  * error if a fallback isn't found.) */
 function connectUser(): Promise<ConnectedUserData>;
@@ -132,12 +135,6 @@ function disconnectUser(): void;
 
 /* Restart last user session. */
 function reconnectUser(addr?: string |  undefined): Promise<ConnectedUserData>;
-    
-/* Set wallet fallback to `WalletConnect`. Make sure to call this once before using `connectUser` */
-function useWalletConnect(): void;
-    
-/* Set wallet fallback to web wallet. Make sure to call this once before using `connectUser` */
-function useWebWallet(): void;
 ```
 
 ### General Utilities/Helpers

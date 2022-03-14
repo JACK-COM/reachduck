@@ -2,7 +2,6 @@ import { NetworkProvider, selectBlockchainNetwork } from "..";
 import { getBlockchain } from "../storage";
 import { NetworkData, ReachToken, ChainSymbol, NetworksMap } from "../types";
 import ALGO from "./ALGO";
-import { createWCClient, disconnectWC } from "./WalletConnect";
 
 const CHAINS: Record<ChainSymbol, NetworkInterface> = {
   ALGO: makeAPI("ALGO", ALGO),
@@ -14,9 +13,7 @@ const CHAINS: Record<ChainSymbol, NetworkInterface> = {
 };
 
 /** Interface for blockchain-specific helpers */
-export type ConnectorInterface = {
-  /** Clear any user session details (usually for `WalletConnect`) */
-  disconnectUser(): void;
+export type NetworkInterface = {
   /** Fetch account details from network */
   fetchAccount(acc: string | any): any | Promise<any>;
   /** Fetch an asset/token by its ID from the chain's block explorer */
@@ -25,20 +22,10 @@ export type ConnectorInterface = {
   getProviderEnv(network?: ChainSymbol | string): void;
   /** Fetch account assets from network. Optionally takes a list of assets addresses */
   loadAssets(acc: string | any, assets?: string[]): any | Promise<ReachToken[]>;
-  /**
-   * Get an object with a key containing a wallet fallback for `stdlib`.
-   * Defaults to `MyAlgoConnect` on Algorand.
-   */
-  getWebWalletClientOpts(): any;
   /** Search for an asset/token by its name. Returns a list of results */
   searchAssetsByName(assetName: string): any;
   /** Search for transactions for this `addr` */
   searchForTransactions(addr: string, opts?: any): any;
-};
-
-export type NetworkInterface = ConnectorInterface & {
-  /** Get a `WalletConnect` client instance */
-  getWalletConnectClientOpts(): any;
 };
 
 export const NETWORKS: NetworksMap = {
@@ -57,7 +44,7 @@ export function listSupportedNetworks(): NetworkData[] {
 }
 
 /**
- * Returns a `ConnectorInterface` w/ additional chain-specific helpers.
+ * Returns a `NetworkInterface` w/ additional chain-specific helpers.
  * Note: not all `network` options are accepted by all chains. Defaults
  * to "ALGO" + "TestNet" if no values are provided.
  */
@@ -76,29 +63,20 @@ export function isSupportedNetwork(key: ChainSymbol) {
 }
 
 /**
- * Create a default `NetworkInterface` object that can be overridden
+ * Create a default `ConnectorInterface` object that can be overridden
  * with chain-specific functions
  */
 function makeAPI(
   chain: string & ChainSymbol,
-  overrides: Partial<ConnectorInterface> = {}
+  overrides: Partial<NetworkInterface> = {}
 ): NetworkInterface {
   const emptyList = () => [];
   const unImpl = (m: string) => console.log(`Unsupported ${chain} call "${m}"`);
 
   return {
-    disconnectUser: disconnectWC,
     fetchAccount: () => unImpl("fetchAccount"),
     fetchAssetById: () => unImpl("fetchAssetById"),
     getProviderEnv: () => ({}),
-    getWebWalletClientOpts: () => unImpl("getWebWalletClientOpts"),
-    getWalletConnectClientOpts: function _getWCCOpts() {
-      return {
-        WalletConnect: function () {
-          return createWCClient(chain);
-        },
-      };
-    },
     loadAssets: () => unImpl("loadAssets"),
     searchAssetsByName: emptyList,
     searchForTransactions: emptyList,
