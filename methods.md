@@ -30,8 +30,6 @@ All methods below are available as individual imports.
 * [tokenMetadata](#tokenmetadata)
 * [trimByteString](#trimbytestring)
 * [truncateString](#truncatestring)
-* [useWalletConnect](#usewalletconnect)
-* [useWebWallet](#usewebwallet)
 
 ---
 
@@ -183,10 +181,9 @@ When `exists` is true, you can call `reconnectUser( addr )` using the
 function checkSessionExists(): { exists: boolean; isWCSession: boolean; addr: string | null;};
 ```
 #### `connectUser`
-Begin a session with a user's wallet of choice. Make sure to call 
-`useWebWallet` or `useWalletConnect` before calling this function, 
-as it will get the user to authenticate using a wallet (and will
-error if a fallback isn't found.) 
+Begin a session with a user's wallet of choice. Make sure to configure `stdlib` to 
+use either `MyAlgo` or `WalletConnect` before calling this function, as it will get 
+the user to authenticate using a wallet (and will error if a fallback isn't found.) 
 ```typescript
 function connectUser(): Promise<ConnectedUserData>;
 ```
@@ -200,17 +197,6 @@ function disconnectUser(): void;
 Restart last user session.
 ```typescript
 function reconnectUser(addr?: string |  undefined): Promise<ConnectedUserData>;
-```
-
-#### `useWalletConnect`
-Set wallet fallback to `WalletConnect`. Make sure to call this once before using `connectUser` 
-```typescript
-function useWalletConnect(): void;
-```
-#### `useWebWallet`
-Set wallet fallback to web wallet. Make sure to call this once before using `connectUser`
-```typescript
-function useWebWallet(): void;
 ```
 
 ---
