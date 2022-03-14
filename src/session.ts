@@ -2,6 +2,7 @@ import { ReachAccount, LibFallbackOpts } from "./types";
 import { createReachAPI } from "./reachlib-api";
 import { createConnectorAPI } from "./networks/index.networks";
 import { getStorage, isBrowser } from "./utils/helpers";
+import { Providers } from "./utils/constants";
 
 /** Configure stdlib wallet fallback */
 function setLibFallback(opts?: LibFallbackOpts) {
@@ -27,10 +28,12 @@ export function useWalletConnect() {
 }
 
 /** Connect user Wallet */
-export async function connectUser() {
+export async function connectUser(provider?: string) {
   const { getDefaultAccount } = createReachAPI();
   try {
     const account: ReachAccount = await getDefaultAccount();
+    if(provider)
+      account.networkAccount.provider = provider;
     return hydrateUser(account);
   } catch (e: any) {
     throw e;
@@ -75,10 +78,12 @@ export async function reconnectUser(addr?: string | null) {
   const stdlib = createReachAPI();
   if (addr) {
     useWebWallet();
-    return hydrateUser(await stdlib.connectAccount({ addr }));
+    return hydrateUser(await stdlib.connectAccount({ provider: Providers.MyAlgo, addr }));
   } else {
     useWalletConnect();
-    return hydrateUser(await stdlib.getDefaultAccount());
+    const defaultAccount = await stdlib.getDefaultAccount();
+    defaultAccount.networkAccount.provider = Providers.WalletConnect;
+    return hydrateUser(defaultAccount);
   }
 }
 

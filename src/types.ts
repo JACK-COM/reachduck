@@ -55,7 +55,7 @@ export type ReachToken = {
 
 /** A reach-connected Network Account representation */
 export type ReachAccount = { [x: string]: any } & {
-  networkAccount: { addr?: string; address?: string; [x: string]: any };
+  networkAccount: { provider?: string; addr?: string; address?: string; [x: string]: any };
   /** @deprecated - Use `reachAccount.contract(backend)` instead */
   attach<T extends BackendModule>(
     backend: T,
