@@ -28,8 +28,6 @@ export type InteractFn<T extends BackendModule> = {
   [fn in keyof T]: (interact: any, ctcInfo?: string | number) => any;
 };
 
-export type LibFallbackOpts = { providerEnv?: any } & Record<string, any>;
-
 /** `NetworkData` describes single network data-item (for e.g. Ethereum) */
 export type NetworkData = {
   name: string;

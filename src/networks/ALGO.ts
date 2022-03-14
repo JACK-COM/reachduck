@@ -1,4 +1,3 @@
-import MyAlgoConnect from "@randlabs/myalgo-connect";
 import {
   fetchAccount,
   fetchAssetById,
@@ -12,7 +11,6 @@ export const AlgoInterface = {
   fetchAssetById,
   searchAssetsByName,
   getProviderEnv,
-  getWebWalletClientOpts,
   loadAssets,
   searchForTransactions,
 };
@@ -43,11 +41,4 @@ async function loadAssets(addr: string) {
   } else updates.assets = [];
 
   return updates;
-}
-
-/** Enable `MyAlgoConnect` use by stdlib */
-function getWebWalletClientOpts() {
-  return {
-    MyAlgoConnect,
-  };
 }
