@@ -1,4 +1,5 @@
 import { Indexer } from "algosdk";
+import { getBlockchainNetwork } from "../storage";
 import { ReachToken, NetworkProvider } from "../types";
 
 type TxnSearchOpts = {
@@ -16,10 +17,14 @@ type AlgoProviderEnv = {
   ALGO_TOKEN?: string;
   REACH_ISOLATED_NETWORK?: string;
 };
+type TokenRaw = {
+  index: number;
+  params: Record<string, any>;
+};
 
 /** @private Algorand Indexer instance (for querying the chain) */
 const networks: NetworkProvider[] = ["TestNet", "BetaNet", "MainNet"];
-const TK = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+const TOKEN = "";
 let indexer: Indexer;
 let network: NetworkProvider = "TestNet";
 let reachProviderEnv: AlgoProviderEnv;
@@ -30,10 +35,10 @@ let reachProviderEnv: AlgoProviderEnv;
  */
 export function useIndexerClient(): Indexer {
   if (!indexer) {
-    resetProvider();
+    resetProvider(getBlockchainNetwork() as NetworkProvider);
     const { ALGO_INDEXER_SERVER } = getProviderEnv(network);
     const ixURL = new URL(ALGO_INDEXER_SERVER);
-    indexer = new Indexer(TK, ALGO_INDEXER_SERVER, ixURL.port);
+    indexer = new Indexer(TOKEN, ALGO_INDEXER_SERVER, ixURL.port);
   }
 
   return indexer;
@@ -60,13 +65,14 @@ export async function fetchAccount(addr: string) {
 export async function fetchAssetById(
   assetId: number,
   balance = 0
-): Promise<ReachToken> {
+): Promise<ReachToken | null> {
   try {
     const Indexer = useIndexerClient();
     const data = await Indexer.lookupAssetByID(assetId).do();
-    return formatAssetMetadata(data?.asset, balance);
+    if (data.asset) return formatAssetMetadata(data?.asset, balance);
+    return null;
   } catch (error: any) {
-    return {} as ReachToken;
+    return null;
   }
 }
 
@@ -88,7 +94,7 @@ export async function searchAssetsByName(name: string): Promise<any[]> {
   try {
     const Indexer = useIndexerClient();
     const assetInfo = await Indexer.searchForAssets().name(name).do();
-    return assetInfo?.assets;
+    return assetInfo?.assets.map((data: TokenRaw) => formatAssetMetadata(data));
   } catch (error) {
     return [];
   }
@@ -142,13 +148,14 @@ function fallbackAcct(e: any) {
 }
 
 /**
- * Search for assets called `assetName`
- * @param assetName Name target
+ * Create a `ReachToken` object from asset metadata
+ * @param asset Asset data
+ * @param amount User balance of asset (if available). Defaults to `0`
  * @returns List of assets roughly matching name
  */
 function formatAssetMetadata(
-  asset: any = { params: {} },
-  amount: number
+  asset: TokenRaw = { index: -1, params: {} },
+  amount: number = 0
 ): ReachToken {
   const { index: id, params } = asset;
 
@@ -169,13 +176,13 @@ function resetProvider(prov: NetworkProvider = "TestNet") {
   const key = prov.toLowerCase();
   network = prov;
   reachProviderEnv = {
-    ALGO_SERVER: "https://testnet.algoexplorerapi.io",
-    // ALGO_SERVER: `https://node.${key}.algoexplorerapi.io`,
+    // Switched to AlgoNode (Free: 50 req/s per IP),
+    ALGO_SERVER: `https://${key}-api.algonode.cloud`,
     ALGO_PORT: "",
-    ALGO_TOKEN: TK,
+    ALGO_TOKEN: TOKEN,
     ALGO_INDEXER_SERVER: `https://algoindexer.${key}.algoexplorerapi.io`,
     ALGO_INDEXER_PORT: "",
-    ALGO_INDEXER_TOKEN: TK,
+    ALGO_INDEXER_TOKEN: "a".padEnd(64, "a"),
     REACH_ISOLATED_NETWORK: "no",
   };
 }
