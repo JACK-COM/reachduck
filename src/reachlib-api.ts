@@ -1,5 +1,5 @@
 import * as T from "./types";
-import { NETWORKS } from "./networks/index.networks";
+import { createConnectorAPI, NETWORKS } from "./networks/index.networks";
 import { trimByteString, formatNumberShort } from "./utils/helpers";
 import {
   getBlockchain,
@@ -93,27 +93,38 @@ export function parseCurrency(val: any, dec?: number) {
 
 /** `@reach-helper` Get token data and `acc`'s balance of token (if available) */
 export async function tokenMetadata(
-  token: any,
+  tokenId: any,
   acc: T.ReachAccount
 ): Promise<T.ReachToken> {
   const { balanceOf } = createReachAPI();
-  const fetchToken = () =>
-    acc
-      .tokenMetadata(token)
-      .then((md: any) => formatReachToken(token, 0, md))
-      .catch(() => undefined);
+  const fetchBalance = () => withTimeout(balanceOf(acc, tokenId));
+  const fetchToken = () => {
+    const chain = createConnectorAPI();
+    return withTimeout(chain.fetchAssetById(tokenId), null);
+  };
+  const [metadata, bal] = await Promise.all([fetchToken(), fetchBalance()]);
+  if (!metadata) throw new Error(`Token "${tokenId}" not found`);
 
-  const [metadata, bal] = await Promise.all([
-    fetchToken(),
-    balanceOf(acc, token).catch(() => 0),
-  ]);
-
-  if (!metadata) throw new Error("Token not found");
-
-  return formatReachToken(token, bal, metadata);
+  return formatReachToken(tokenId, bal, metadata);
 }
 
 /* INTERNAL */
+
+// HELPER | cancel request if it takes too long
+export async function withTimeout<T>(
+  request: Promise<T> | (() => Promise<T>),
+  fallback = null,
+  timeout = 3500
+): Promise<T | null> {
+  return new Promise(async (resolve) => {
+    const call = typeof request === "function";
+    const cancel = () => resolve(fallback);
+    setTimeout(cancel, timeout);
+    const d = call ? await request() : await request;
+
+    resolve(d);
+  });
+}
 
 /** `@reach-helper` Format token metadata from `tokenMetadata` API request */
 function formatReachToken(tokenId: any, amount: any, data: any): T.ReachToken {

@@ -88,8 +88,15 @@ export function fromMaybe(
 }
 
 /** Format currency in user locale (e.g. `fn(1000) -> 1,000) */
-export function formatCurrencyLocale(val: number, locale?: any) {
-  const intlFmt = Intl.NumberFormat(locale);
+export function formatCurrencyLocale(
+  val: number,
+  locale?: string,
+  currency?: string
+) {
+  const intlFmt =
+    locale && currency
+      ? Intl.NumberFormat(locale, { style: "currency", currency })
+      : Intl.NumberFormat(locale);
   return intlFmt.format(val);
 }
 

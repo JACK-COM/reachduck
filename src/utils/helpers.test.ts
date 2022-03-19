@@ -1,7 +1,6 @@
-/**
- * @jest-environment jsdom
- */
 import * as H from "./helpers";
+
+const localStorage = H.getStorage();
 
 describe("Helpers → checkVersionChanged", () => {
   it("returns true when a value doesn't match in localStorage", () => {
@@ -46,7 +45,8 @@ describe("Helpers → fromMaybe", () => {
 });
 
 describe("Helpers → Number helpers", () => {
-  const { formatNumberShort, abbrevNumber } = H;
+  const { formatNumberShort, formatCurrencyLocale, abbrevNumber } = H;
+
   it("Abbreviates by the number of groups in the value", () => {
     // Number with '1' group (e.g. 1,234 = value(1), group(234))
     expect(abbrevNumber(1)).toStrictEqual("K");
@@ -98,6 +98,15 @@ describe("Helpers → Number helpers", () => {
     expect(formatNumberShort(lg)).toStrictEqual("1.55Se");
     lg = BigInt(lg) * BigInt(lg);
     expect(formatNumberShort(lg)).toStrictEqual("2.4!");
+  });
+
+  it("Formats currency when currency and locale are provided", () => {
+    const num = 1000;
+    const locale = "de";
+    const currency = "EUR";
+    expect(formatCurrencyLocale(num)).toStrictEqual("1,000");
+    expect(formatCurrencyLocale(num, locale)).toStrictEqual("1.000");
+    expect(formatCurrencyLocale(num, locale, currency)).not.toBe("1.000");
   });
 });
 
