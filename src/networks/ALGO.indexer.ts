@@ -1,4 +1,5 @@
 import { Indexer } from "algosdk";
+import { parseCurrency } from "../reachlib-api";
 import { getBlockchainNetwork } from "../storage";
 import { ReachToken, NetworkProvider } from "../types";
 
@@ -161,7 +162,7 @@ function formatAssetMetadata(
 
   return {
     id,
-    amount,
+    amount: parseCurrency(amount, params.decimals),
     decimals: params.decimals,
     name: params.name || `(${id})`,
     symbol: params["unit-name"] || `#${id}`,
@@ -180,9 +181,9 @@ function resetProvider(prov: NetworkProvider = "TestNet") {
     ALGO_SERVER: `https://${key}-api.algonode.cloud`,
     ALGO_PORT: "",
     ALGO_TOKEN: TOKEN,
-    ALGO_INDEXER_SERVER: `https://algoindexer.${key}.algoexplorerapi.io`,
+    ALGO_INDEXER_SERVER: `https://${key}-idx.algonode.cloud`,
     ALGO_INDEXER_PORT: "",
-    ALGO_INDEXER_TOKEN: "a".padEnd(64, "a"),
+    ALGO_INDEXER_TOKEN: TOKEN,
     REACH_ISOLATED_NETWORK: "no",
   };
 }
