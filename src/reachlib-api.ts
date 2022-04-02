@@ -66,13 +66,13 @@ export function loadReach(
 
   // Instantiate Reach object
   const REACH_CONNECTOR_MODE = chain;
-  reach = loadStdlibFn({ REACH_CONNECTOR_MODE });
-  storeReachEnvironment(REACH_CONNECTOR_MODE, network);
+  const providerEnv = reachEnvironment(REACH_CONNECTOR_MODE, network);
+  reach = loadStdlibFn({ REACH_CONNECTOR_MODE, providerEnv });
 
   return reach;
 }
 
-function storeReachEnvironment(
+function reachEnvironment(
   chain: T.ChainSymbol & string,
   network: T.NetworkProvider & string,
   providerEnv?: any
@@ -80,11 +80,14 @@ function storeReachEnvironment(
   void selectBlockchain(chain);
   void selectBlockchainNetwork(network);
 
-  if (providerEnv) reach.setProviderByEnv(providerEnv);
-  else if (network !== "MainNet") {
+  if (providerEnv) return providerEnv;
+
+  if (network !== "MainNet") {
     const connector = createConnectorAPI(chain);
-    reach.setProviderByEnv(connector.getProviderEnv(network));
+    return connector.getProviderEnv(network);
   }
+
+  return {};
 }
 
 type ReachEnvOpts = {
@@ -111,8 +114,8 @@ export function loadReachWithOpts(
 
   // Instantiate Reach object
   const REACH_CONNECTOR_MODE = chain || getBlockchain();
+  reachEnvironment(REACH_CONNECTOR_MODE, network, providerEnv);
   reach = loadStdlibFn({ REACH_CONNECTOR_MODE });
-  storeReachEnvironment(REACH_CONNECTOR_MODE, network, providerEnv);
 
   return reach;
 }
