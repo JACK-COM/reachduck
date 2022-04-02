@@ -3,6 +3,7 @@ import { createConnectorAPI, NETWORKS } from "./networks/index.networks";
 import { trimByteString, formatNumberShort } from "./utils/helpers";
 import {
   getBlockchain,
+  getBlockchainNetwork,
   selectBlockchain,
   selectBlockchainNetwork,
 } from "./storage";
@@ -55,8 +56,8 @@ export async function optInToAsset(acc: T.ReachAccount, tokenId: any) {
  */
 export function loadReach(
   loadStdlibFn: LoadStdlibFn,
-  chain?: T.ChainSymbol,
-  network: T.NetworkProvider = "TestNet"
+  chain: T.ChainSymbol = getBlockchain(),
+  network: T.NetworkProvider = getBlockchainNetwork()
 ) {
   if (reach?.connector) {
     console.warn("Reach already instantiated");
@@ -64,10 +65,55 @@ export function loadReach(
   }
 
   // Instantiate Reach object
-  const REACH_CONNECTOR_MODE = chain || getBlockchain();
-  void selectBlockchain(REACH_CONNECTOR_MODE);
-  void selectBlockchainNetwork(network);
+  const REACH_CONNECTOR_MODE = chain;
   reach = loadStdlibFn({ REACH_CONNECTOR_MODE });
+  storeReachEnvironment(REACH_CONNECTOR_MODE, network);
+
+  return reach;
+}
+
+function storeReachEnvironment(
+  chain: T.ChainSymbol & string,
+  network: T.NetworkProvider & string,
+  providerEnv?: any
+) {
+  void selectBlockchain(chain);
+  void selectBlockchainNetwork(network);
+
+  if (providerEnv) reach.setProviderByEnv(providerEnv);
+  else if (network !== "MainNet") {
+    const connector = createConnectorAPI(chain);
+    reach.setProviderByEnv(connector.getProviderEnv(network));
+  }
+}
+
+type ReachEnvOpts = {
+  chain?: T.ChainSymbol & string;
+  network?: T.NetworkProvider & string;
+  providerEnv?: any;
+};
+
+/**
+ * `@reach-helper` Initialize the stdlib instance with an environment override.
+ * Note: this will NOT configure a wallet fallback: you can handle that later with
+ * other helper functions.
+ */
+export function loadReachWithOpts(
+  loadStdlibFn: LoadStdlibFn,
+  opts: ReachEnvOpts
+) {
+  if (reach?.connector) {
+    console.warn("Reach already instantiated");
+    return reach;
+  }
+
+  const { chain = "ALGO", network = "TestNet", providerEnv } = opts;
+
+  // Instantiate Reach object
+  const REACH_CONNECTOR_MODE = chain || getBlockchain();
+  reach = loadStdlibFn({ REACH_CONNECTOR_MODE });
+  storeReachEnvironment(REACH_CONNECTOR_MODE, network, providerEnv);
+
   return reach;
 }
 

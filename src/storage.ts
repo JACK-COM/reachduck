@@ -10,12 +10,18 @@ const PROVIDERS: { [name: string]: Provider } = {
 const NETWORK_STORAGE_KEY = "rd-chain";
 const NETWORK_PROVIDER_KEY = "rd-prov";
 
+export function clearBlockchain() {
+  const storage = getStorage();
+  storage.removeItem(NETWORK_STORAGE_KEY);
+  storage.removeItem(NETWORK_PROVIDER_KEY);
+}
+
 /** Determine whether app is running on `MainNet` or `TestNet` (default) */
-export function getBlockchainNetwork() {
-  return (
+export function getBlockchainNetwork(): string & T.NetworkProvider {
+  const stored =
     getStorage().getItem(NETWORK_PROVIDER_KEY) ||
-    selectBlockchainNetwork(PROVIDERS.TESTNET)
-  );
+    selectBlockchainNetwork(PROVIDERS.TESTNET);
+  return stored as T.NetworkProvider;
 }
 
 /**

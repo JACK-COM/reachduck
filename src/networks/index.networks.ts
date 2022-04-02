@@ -14,12 +14,13 @@ const CHAINS: Record<ChainSymbol, NetworkInterface> = {
 
 /** Interface for blockchain-specific helpers */
 export type NetworkInterface = {
+  chain: ChainSymbol & string;
   /** Fetch account details from network */
   fetchAccount(acc: string | any): any | Promise<any>;
   /** Fetch an asset/token by its ID from the chain's block explorer */
   fetchAssetById(assetId: number): Promise<ReachToken | null>;
   /** Returns a blockchain-specific configuration for `stdlib` */
-  getProviderEnv(network?: ChainSymbol | string): void;
+  getProviderEnv(provider?: NetworkProvider & string): any;
   /** Fetch account assets from network. Optionally takes a list of assets addresses */
   loadAssets(acc: string | any, assets?: string[]): any | Promise<ReachToken[]>;
   /** Search for an asset/token by its name. Returns a list of results */
@@ -74,6 +75,7 @@ function makeAPI(
   const unImpl = (m: string) => console.log(`Unsupported ${chain} call "${m}"`);
 
   return {
+    chain,
     fetchAccount: () => unImpl("fetchAccount"),
     fetchAssetById: async () => {
       unImpl("fetchAssetById");
