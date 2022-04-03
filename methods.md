@@ -1,35 +1,52 @@
 # Methods
 All methods below are available as individual imports.
 
-## Contents
-* [checkSessionExists](#checksessionexists)
-* [checkVersionChanged](#checkversionchanged)
-* [connectUser](#connectuser)
-* [copyToClipboard](#copytoclipboard)
-* [createConnectorAPI](#createconnectorapi)
-* [createReachAPI](#createreachapi)
-* [disconnectUser](#disconnectuser)
-* [formatAddress](#formataddress)
-* [formatCurrency](#formatcurrency)
-* [formatCurrencyLocale](#formatcurrencylocale)
-* [formatNumberShort](#formatnumbershort)
-* [fromMaybe](#frommaybe)
-* [getBlockchain](#getblockchain)
-* [getBlockchainNetwork](#getblockchainnetwork)
-* [inlineAssetOptIn](#inlineassetoptin)
-* [isImageFile](#isimagefile)
-* [isVideoFile](#isvideofile)
-* [loadReach](#loadreach)
-* [optInToAsset](#optintoasset)
-* [parseAddress](#parseaddress)
-* [parseCurrency](#parsecurrency)
-* [reconnectUser](#reconnectuser)
-* [selectBlockchain](#selectblockchain)
-* [selectBlockchainNetwork](#selectblockchainnetwork)
-* [setAppVersion](#setappversion)
-* [tokenMetadata](#tokenmetadata)
-* [trimByteString](#trimbytestring)
-* [truncateString](#truncatestring)
+- [Methods](#methods)
+  - [1. Blockchain networks](#1-blockchain-networks)
+      - [`createConnectorAPI`](#createconnectorapi)
+        - [`NetworkInterface.disconnectUser`](#networkinterfacedisconnectuser)
+        - [`NetworkInterface.fetchAccount`](#networkinterfacefetchaccount)
+        - [`NetworkInterface.fetchAssetById`](#networkinterfacefetchassetbyid)
+        - [`NetworkInterface.getProviderEnv`](#networkinterfacegetproviderenv)
+        - [`NetworkInterface.loadAssets`](#networkinterfaceloadassets)
+        - [`NetworkInterface.getWalletConnectClientOpts`](#networkinterfacegetwalletconnectclientopts)
+        - [`NetworkInterface.getWebWalletClientOpts`](#networkinterfacegetwebwalletclientopts)
+        - [`NetworkInterface.searchAssetsByName`](#networkinterfacesearchassetsbyname)
+        - [`NetworkInterface.searchForTransactions`](#networkinterfacesearchfortransactions)
+  - [2. Working with Stdlib](#2-working-with-stdlib)
+      - [`loadReach`](#loadreach)
+      - [`loadReachWithOpts`](#loadreachwithopts)
+      - [`createReachAPI`](#createreachapi)
+      - [`inlineAssetOptIn`](#inlineassetoptin)
+      - [`parseAddress`](#parseaddress)
+      - [`parseCurrency`](#parsecurrency)
+      - [`tokenMetadata`](#tokenmetadata)
+      - [`optInToAsset`](#optintoasset)
+  - [2. Session Management](#2-session-management)
+      - [`checkSessionExists`](#checksessionexists)
+      - [`connectUser`](#connectuser)
+      - [`disconnectUser`](#disconnectuser)
+      - [`reconnectUser`](#reconnectuser)
+  - [4. General Utilities/Helpers](#4-general-utilitieshelpers)
+      - [`checkVersionChanged`](#checkversionchanged)
+      - [`setAppVersion`](#setappversion)
+      - [`copyToClipboard`](#copytoclipboard)
+      - [`formatAddress`](#formataddress)
+      - [`formatCurrency`](#formatcurrency)
+      - [`formatCurrencyLocale`](#formatcurrencylocale)
+      - [`formatNumberShort`](#formatnumbershort)
+      - [`fromMaybe`](#frommaybe)
+      - [`getBlockchain`](#getblockchain)
+      - [`getBlockchainNetwork`](#getblockchainnetwork)
+      - [`isImageFile`](#isimagefile)
+      - [`isVideoFile`](#isvideofile)
+      - [`listSupportedNetworks`](#listsupportednetworks)
+      - [`noOp`](#noop)
+      - [`selectBlockchain`](#selectblockchain)
+      - [`selectBlockchainNetwork`](#selectblockchainnetwork)
+      - [`trimByteString`](#trimbytestring)
+      - [`truncateString`](#truncatestring)
+    - [Site Menu](#site-menu)
 
 ---
 
@@ -44,7 +61,6 @@ function createConnectorAPI(
     network?: "TestNet" | "BetaNet" | "MainNet"
 ): NetworkInterface
 ```
-
 
 
 ##### `NetworkInterface.disconnectUser`
@@ -112,12 +128,28 @@ NetworkInterface.searchForTransactions(addr: string, opts?: any): any;
 
 ## 2. Working with Stdlib 
 #### `loadReach`
-Initialize your `stdlib` instance. Call this when you would use `loadStdlib`. You only need to use this once. 
+Initialize your `stdlib` instance. Call this when you would use `loadStdlib`. You only need to use this once.\
+This is the a preferred way to load `stdlib` when you want to dynamically call `setWalletFallback`.
 ```typescript
 function loadReach(
     loadStdlibFn: (args: any) => ReachStdLib,
     chain?: string,
     network?: "TestNet" | "MainNet"
+): boolean;
+```
+
+#### `loadReachWithOpts`
+Alternate way to initialize your `stdlib` instance with environment opts. The `providerEnv` property can be used
+to specify properties for an alternative Algorand node. The library defaults to [algonode](https://algonode.io/) when 
+no override is provided.
+```typescript
+function loadReachWithOpts(
+    loadStdlibFn: (args: any) => ReachStdLib,
+    opts?: {
+        chain?: string,
+        network?: "TestNet" | "MainNet",
+        providerEnv?: any
+    }
 ): boolean;
 ```
 
@@ -128,7 +160,7 @@ function createReachAPI(): ReachStdLib;
 ```
 
 #### `inlineAssetOptIn`
-Accept a token (or skip if already accepted) and return a boolean 
+Accept a token (or skip if already accepted) and return a boolean. Requires an `stdlib` instance. 
 ```typescript
 function inlineAssetOptIn(acc: ReachAccount, tokenId: any): Promise<boolean>;
 ```
@@ -139,22 +171,9 @@ function parseAddress(ctc: any): any;
 ```
 
 #### `parseCurrency`
-Convenience: convert `val` into atomic units 
+Convenience: convert `val` into atomic units. Requires an `stdlib` instance.
 ```typescript
 function parseCurrency(val: any, dec?: number | undefined): any;
-```
-    
-#### `selectBlockchain`
-Set current consensus network. May trigger window reload 
-```typescript
-function selectBlockchain(network: string): string;
-```
-
-#### `selectBlockchain`
-Set network provider preference `MainNet` or `TestNet` (or `BetaNet` on Algo). Will
-trigger window reload.
-```typescript
-function selectBlockchain(network: string): string;
 ```
     
 #### `tokenMetadata`
@@ -283,25 +302,28 @@ function listSupportedNetworks(): NetworkData[];
 ```
 
 #### `noOp`
+Doesn't do anything. Useful when you need a function stub.
 ```typescript
-/* Doesn't do anything */
 function noOp(): null;
 ```
+    
 #### `selectBlockchain`
-Store user current network selection for App in `localStorage`.
-⚠️ WARNING: May trigger window reload if library is in a browser context 
+Set current consensus network (e.g. Algorand or Ethereum). May trigger window reload. Requires an `stdlib` instance.\
+This will affect what `createConnectorAPI` returns, if you call the latter without arguments.\
+This function may trigger window reload if a second argument is specified.
 ```typescript
-function selectBlockchain(network: string): string;
+function selectBlockchain(network: string, reload?: boolean): string;
 ```
 
 #### `selectBlockchainNetwork`
-Set network provider preference `MainNet` or `TestNet`.\
-⚠️ WARNING: Optionally triggers window reload 
+Set network provider preference `MainNet` or `TestNet` (or `BetaNet` on Algo). `BetaNet` is only supported on Algorand.\
+This function may trigger window reload if a second argument is specified.
 ```typescript
-function selectBlockchainNetwork(prov: NetworkProvider, reload = false): string;
+function selectBlockchainNetwork(network: "MainNet" | "TestNet" | "BetaNet", reload?: boolean): string;
 ```
+
 #### `trimByteString`
-Trims empty bytes from a decoded Byte string 
+Trims empty bytes (`\0...`) from a string 
 ```typescript
 function trimByteString(str: string): string;
 ```
