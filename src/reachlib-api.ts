@@ -65,9 +65,8 @@ export function loadReach(
   }
 
   // Instantiate Reach object
-  const REACH_CONNECTOR_MODE = chain;
-  const providerEnv = reachEnvironment(REACH_CONNECTOR_MODE, network);
-  reach = loadStdlibFn({ REACH_CONNECTOR_MODE, providerEnv });
+  void reachEnvironment(chain, network);
+  reach = loadStdlibFn(chain);
 
   return reach;
 }
@@ -110,12 +109,18 @@ export function loadReachWithOpts(
     return reach;
   }
 
-  const { chain = "ALGO", network = "TestNet", providerEnv } = opts;
+  const { chain = "ALGO", network = "TestNet" } = opts;
 
   // Instantiate Reach object
   const REACH_CONNECTOR_MODE = chain || getBlockchain();
-  reachEnvironment(REACH_CONNECTOR_MODE, network, providerEnv);
-  reach = loadStdlibFn({ REACH_CONNECTOR_MODE });
+  const providerEnv = reachEnvironment(REACH_CONNECTOR_MODE, network);
+  reach = loadStdlibFn({
+    REACH_CONNECTOR_MODE,
+    providerEnv: {
+      ...providerEnv,
+      ...(opts.providerEnv || {}),
+    },
+  });
 
   return reach;
 }
