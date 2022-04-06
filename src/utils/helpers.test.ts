@@ -63,6 +63,7 @@ describe("Helpers → Number helpers", () => {
     expect(formatNumberShort(1)).toStrictEqual("1");
     expect(formatNumberShort(100)).toStrictEqual("100");
     expect(formatNumberShort(10000)).toStrictEqual("10K");
+    expect(formatNumberShort('199968399000000')).toStrictEqual('199.96T')
     let lg: number | bigint | string = 1_550_000;
     expect(formatNumberShort(lg)).toStrictEqual("1.55M");
     expect(formatNumberShort(lg, 1)).toStrictEqual("1.5M");
@@ -77,7 +78,10 @@ describe("Helpers → Number helpers", () => {
     lg = BigInt(lg) * BigInt(lg);
     expect(formatNumberShort(lg)).toStrictEqual("2.4!");
 
-    expect(formatNumberShort(".12345")).toStrictEqual("0.123");
+    expect(formatNumberShort(".12345")).toStrictEqual("0.12");
+    expect(formatNumberShort("1.2345")).toStrictEqual("1.23");
+    expect(formatNumberShort("12.345")).toStrictEqual("12.35");
+    expect(formatNumberShort("12345")).toStrictEqual("12.34K");
     expect(formatNumberShort("1")).toStrictEqual("1");
     expect(formatNumberShort("1.1")).toStrictEqual("1.1");
     expect(formatNumberShort("100")).toStrictEqual("100");
