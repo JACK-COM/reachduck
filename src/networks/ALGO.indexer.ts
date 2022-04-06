@@ -2,6 +2,7 @@ import { Indexer } from "algosdk";
 import { parseCurrency } from "../reachlib-api";
 import { getBlockchainNetwork } from "../storage";
 import { ReachToken, NetworkProvider } from "../types";
+import { trimByteString } from "../utils/helpers";
 
 type TxnSearchOpts = {
   amount?: number;
@@ -164,12 +165,28 @@ function formatAssetMetadata(
     id,
     amount: parseCurrency(amount, params.decimals),
     decimals: params.decimals,
-    name: params.name || `(${id})`,
-    symbol: params["unit-name"] || `#${id}`,
+    name: assetName(params),
+    symbol: assetSymbol(params),
     supply: params.total,
     url: params.url,
     verified: params.verified || false,
   };
+}
+
+function assetName(asset: any) {
+  if (asset.name) return asset.name
+  if (asset['name-b64']) return decodeB64String(asset['name-b64'])
+  return assetSymbol(asset)
+}
+
+function assetSymbol(asset: any) {
+  if (asset['unit-name']) return asset['unit-name']
+  if (asset['unit-name-b64']) return decodeB64String(asset['unit-name-b64'])
+  return `(${asset.index})`
+}
+
+function decodeB64String(st: string) {
+  return trimByteString(Buffer.from(st, 'base64').toString('utf8'))
 }
 
 /** Store initial provider settings */
