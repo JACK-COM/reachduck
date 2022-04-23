@@ -10,29 +10,38 @@ import {
 
 type LoadStdlibFn = { (args: any): any };
 
-/** `@reach-helper` `StdLib` instance */
 const UNINSTANTIATED = `
 QUACK! ReachStdlib is not instantiated. See "@jackcom/reachduck" docs for info.
 `;
+/**
+ * @reach_helper `StdLib` instance */
 let reach: T.ReachStdLib;
 
-/** `@reach-helper` Global default reach object */
+/**
+ * @reach_helper
+ * Global default reach object */
 export function createReachAPI() {
   if (!reach) throw new Error(UNINSTANTIATED);
   return reach;
 }
 
-/** `@reach-helper` Check if an account has opted in to a token. Probably `noOp` outside Algorand */
+/**
+ * @reach_helper
+ * Check if an account has opted in to a token. Probably `noOp` outside Algorand */
 export async function checkHasToken(acc: T.ReachAccount, token: any) {
   return (await acc.tokenAccepted(token)) || Promise.resolve(false);
 }
 
-/** `@reach-helper` Format address for `networkAccount` instance */
+/**
+ * @reach_helper
+ * Format address for `networkAccount` instance */
 export function formatAddress(acc: T.ReachAccount) {
   return createReachAPI().formatAddress(acc.getAddress());
 }
 
-/** `@reach-helper` Optionally-abbreviated currency formatter (e.g. `fn(1000)` -> `1000` || `1K` ). Expects `amt` to be in atomic unit for network */
+/**
+ * @reach_helper
+ * Optionally-abbreviated currency formatter (e.g. `fn(1000)` -> `1000` || `1K` ). Expects `amt` to be in atomic unit for network */
 export function formatCurrency(amt: any, decs?: number, abbr = false): string {
   const { formatWithDecimals } = createReachAPI();
   const decimals = parseNetworkDecimals(Number(decs));
@@ -40,7 +49,9 @@ export function formatCurrency(amt: any, decs?: number, abbr = false): string {
   return abbr ? formatNumberShort(reachFmt) : reachFmt;
 }
 
-/** `@reach-helper` Optionally opt-in in to assets */
+/**
+ * @reach_helper
+ * Optionally opt-in in to assets */
 export async function optInToAsset(acc: T.ReachAccount, tokenId: any) {
   if (await acc.tokenAccepted(tokenId)) return Promise.resolve(true);
 
@@ -51,26 +62,68 @@ export async function optInToAsset(acc: T.ReachAccount, tokenId: any) {
 }
 
 /**
- * `@reach-helper` Initialize the stdlib instance. Note: this will NOT configure
- * a wallet fallback: you can handle that later with other helper functions.
+ * @reach_helper
+ * Initialize the stdlib instance. Note: If you want to use
+ * a wallet fallback (any browser or other client wallet), use `loadReachWithOpts`
+ * insrtead
  */
 export function loadReach(
   loadStdlibFn: LoadStdlibFn,
   chain: T.ChainSymbol = getBlockchain(),
   network: T.NetworkProvider = getBlockchainNetwork()
 ) {
+  if (reach?.connector) return reach;
+
+  // Instantiate Reach object
+  void reachEnvironment(chain, network);
+  reach = loadStdlibFn(chain);
+  reach.setProviderByName(network);
+
+  return reach;
+}
+
+/**
+ * @reach_helper
+ *
+ * @reach_helper
+ * Initialize the stdlib instance with an environment override and
+ * (optional) wallet fallback.
+ */
+export function loadReachWithOpts(
+  loadStdlibFn: LoadStdlibFn,
+  opts: ReachEnvOpts
+) {
   if (reach?.connector) {
     console.warn("Reach already instantiated");
     return reach;
   }
 
+  const { chain = "ALGO", network = "TestNet" } = opts;
+
   // Instantiate Reach object
-  void reachEnvironment(chain, network);
-  reach = loadStdlibFn(chain);
+  const REACH_CONNECTOR_MODE = chain || getBlockchain();
+  const providerEnv = {
+    ...reachEnvironment(REACH_CONNECTOR_MODE, network),
+    ...(opts.providerEnv || {}),
+  };
+  reach = loadStdlibFn({ REACH_CONNECTOR_MODE });
+  if (opts.walletFallback) {
+    reach.setWalletFallback(
+      reach.walletFallback({
+        ...opts.walletFallback,
+        providerEnv,
+      })
+    );
+  } else reach.setProviderByEnv(providerEnv);
 
   return reach;
 }
 
+/**
+ * @internal
+ * Store environment variables for `stdlib` instance, and create
+ * a `connectorAPI` for talking to the selected blockchain
+ */
 function reachEnvironment(
   chain: T.ChainSymbol & string,
   network: T.NetworkProvider & string,
@@ -89,41 +142,15 @@ function reachEnvironment(
   return {};
 }
 
-type ReachEnvOpts = {
+export type ReachEnvOpts = {
   chain?: T.ChainSymbol & string;
   network?: T.NetworkProvider & string;
   providerEnv?: any;
+  walletFallback?: {
+    MyAlgoConnect?: any;
+    WalletConnect?: any;
+  };
 };
-
-/**
- * `@reach-helper` Initialize the stdlib instance with an environment override.
- * Note: this will NOT configure a wallet fallback: you can handle that later with
- * other helper functions.
- */
-export function loadReachWithOpts(
-  loadStdlibFn: LoadStdlibFn,
-  opts: ReachEnvOpts
-) {
-  if (reach?.connector) {
-    console.warn("Reach already instantiated");
-    return reach;
-  }
-
-  const { chain = "ALGO", network = "TestNet" } = opts;
-
-  // Instantiate Reach object
-  const REACH_CONNECTOR_MODE = chain || getBlockchain();
-  const providerEnv = reachEnvironment(REACH_CONNECTOR_MODE, network);
-  reach = loadStdlibFn({
-    REACH_CONNECTOR_MODE,
-    providerEnv: {
-      ...providerEnv,
-      ...(opts.providerEnv || {}),
-    },
-  });
-
-  return reach;
-}
 
 /**
  * Parses a contract address for Algorand or other chains
@@ -139,13 +166,17 @@ export function parseAddress(ctc: any) {
   return pit.startsWith("0x") ? pit : `0x${pit}`;
 }
 
-/** `@reach-helper` Convert `val` to atomic units for the current network */
+/**
+ * @reach_helper
+ * Convert `val` to atomic units for the current network */
 export function parseCurrency(val: any, dec?: number) {
   const decimals = parseNetworkDecimals(Number(dec));
   return createReachAPI().parseCurrency(val, decimals);
 }
 
-/** `@reach-helper` Get token data and `acc`'s balance of token (if available) */
+/**
+ * @reach_helper
+ * Get token data and `acc`'s balance of token (if available) */
 export async function tokenMetadata(
   tokenId: any,
   acc: T.ReachAccount
@@ -180,7 +211,9 @@ export async function withTimeout<T>(
   });
 }
 
-/** `@reach-helper` Format token metadata from `tokenMetadata` API request */
+/**
+ * @reach_helper
+ * Format token metadata from `tokenMetadata` API request */
 function formatReachToken(tokenId: any, amount: any, data: any): T.ReachToken {
   const id = parseAddress(tokenId);
   const fallbackName = `Asset #${id}`;

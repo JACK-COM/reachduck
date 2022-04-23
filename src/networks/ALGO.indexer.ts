@@ -173,16 +173,16 @@ function formatAssetMetadata(
   };
 }
 
-function assetName(asset: any) {
-  if (asset.name) return asset.name
-  if (asset['name-b64']) return decodeB64String(asset['name-b64'])
-  return assetSymbol(asset)
+function assetName(data: any) {
+  if (data.name) return data.name
+  if (data['name-b64']) return decodeB64String(data['name-b64'])
+  return `Untitled (${assetSymbol(data)})`
 }
 
-function assetSymbol(asset: any) {
-  if (asset['unit-name']) return asset['unit-name']
-  if (asset['unit-name-b64']) return decodeB64String(asset['unit-name-b64'])
-  return `(${asset.index})`
+function assetSymbol(data: any) {
+  if (data['unit-name']) return data['unit-name']
+  if (data['unit-name-b64']) return decodeB64String(data['unit-name-b64'])
+  return `#${data.index}`
 }
 
 function decodeB64String(st: string) {

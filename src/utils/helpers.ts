@@ -108,10 +108,7 @@ export function formatNumberShort(val: string | number | bigint, round = 2) {
   const ints = parts[0].length;
 
   if (!ints || ints <= 3)
-    return parseFloat(val.toString())
-      .toFixed(round)
-      .replace(/0*$/, "")
-      .replace(/\.$/, "");
+    return trimTrailingZeros(parseFloat(val.toString()).toFixed(round));
 
   // Get number of vals before first 'comma'
   const abbrLength = ints % 3 || 3;
@@ -166,5 +163,9 @@ export function truncateString(str: string, pad = 6): string {
 
 function trimDecimals(val: string) {
   if (val.replace(/0*/, "") === "") return "";
-  return `.${val.replace(/0$/, "")}`;
+  return `.${trimTrailingZeros(val)}`;
+}
+
+function trimTrailingZeros(val: string) {
+  return val.replace(/0*$/, "").replace(/\.$/, "");
 }
