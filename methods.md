@@ -129,7 +129,7 @@ NetworkInterface.searchForTransactions(addr: string, opts?: any): any;
 ## 2. Working with Stdlib 
 #### `loadReach`
 Initialize your `stdlib` instance. Call this when you would use `loadStdlib`. You only need to use this once.\
-This is the a preferred way to load `stdlib` when you want to dynamically call `setWalletFallback`.
+This is the a preferred way to load `stdlib` if you are not in a browser or `window` context (e.g. command line, NodeJS app, AWS Lambda, etc) and want to quickly get started. 
 ```typescript
 function loadReach(
     loadStdlibFn: (args: any) => ReachStdLib,
@@ -139,19 +139,27 @@ function loadReach(
 ```
 
 #### `loadReachWithOpts`
-Alternate way to initialize your `stdlib` instance with environment opts. The `providerEnv` property can be used
-to specify properties for an alternative Algorand node. The library defaults to [algonode](https://algonode.io/) when 
-no override is provided.
+Initialize your `stdlib` instance with environment opts.  
 ```typescript
 function loadReachWithOpts(
     loadStdlibFn: (args: any) => ReachStdLib,
     opts?: {
-        chain?: string,
-        network?: "TestNet" | "MainNet",
-        providerEnv?: any
+      chain?: T.ChainSymbol & string;
+      network?: T.NetworkProvider & string;
+      providerEnv?: any;
+      walletFallback?: {
+        MyAlgoConnect?: any;
+        WalletConnect?: any;
+      };
     }
 ): boolean;
 ```
+
+* `providerEnv` can be used to specify properties for an alternative Algorand node. The library defaults to [algonode](https://algonode.io/) when 
+no override is provided.
+* `walletFallback` can be supplied when in a browser context, and you want to use either `MyAlgoConnect` or `WalletConnect`.\
+ This property must contain only one key; it should be the same object you pass into `stdlib.walletFallback( opts )`.
+ 
 
 #### `createReachAPI`
 Returns your configured `stdlib` instance. Use after you have called `loadReach( loadStdlib )` at least once. 
