@@ -1,7 +1,7 @@
-export type APIFn<T extends BackendModule> = {
-  [fn in keyof T]: (...args: any[]) => Promise<any>;
-} & {
-  [fnGroup in keyof T]: CtcLabeledFunc<any>;
+export type APIFn<T extends any> = {
+  [fn in keyof T]: T[fn] extends (...a: any[]) => Promise<undefined>
+    ? (...a: any[]) => Promise<any>
+    : CtcFnGroup<T[fn]>;
 };
 
 export type BackendModule = Record<string, any>;
@@ -23,6 +23,25 @@ export type CtcLabeledFunc<T extends any> =
 export type CtcFnGroup<T> = {
   [k in keyof T]: CtcFn;
 };
+/** Reach contract View representation */
+type CtcViewGroup<T extends BackendModule> =
+  | ReturnType<T["_getViews"]>["infos"];
+export type ContractView<T extends BackendModule> = {
+  [k in keyof CtcViewGroup<T>]: (
+    ...a: any[]
+  ) => Promise<
+    | [
+        "Some",
+        UnwrapPromise<
+          ReturnType<ReturnType<T["_getViews"]>["infos"][k]["decode"]>
+        >
+      ]
+    | ["None", null]
+  >;
+};
+
+/** Unpack a promise to use its value as a type */
+type UnwrapPromise<T> = T extends Promise<infer A> ? A : T;
 
 export type InteractFn<T extends BackendModule> = {
   [fn in keyof T]: (interact: any, ctcInfo?: string | number) => any;
@@ -87,13 +106,13 @@ export type ReachContract<T extends BackendModule> = {
   /** Reach Contract `Participant` member */
   participants: InteractFn<T["_Participants"]>;
   /** Reach Contract `View` member */
-  v: CtcLabeledFunc<any>;
+  v: ContractView<T>;
   /** Reach Contract `View` member */
-  views: CtcLabeledFunc<any>;
+  views: ContractView<T>;
   /** Reach Contract `Events` member */
-  e: ReachEventStream;
+  e: ReachEventStream<ReturnType<T["_getEvents"]>>;
   /** Reach Contract `Events` member */
-  events: ReachEventStream;
+  events: ReachEventStream<ReturnType<T["_getEvents"]>>;
   /** @deprecated Get contract `Views`. Use `ctc.views` or `ctc.v` */
   getViews(): CtcLabeledFunc<any>;
 };
@@ -102,8 +121,8 @@ export type ReachContract<T extends BackendModule> = {
 export type ReachEvent<T extends any> = { when: any; what: T };
 
 /** `ReachEvent` is an `Event` emitted from a contract `EventStream` */
-export type ReachEventStream = {
-  [name: string]: {
+export type ReachEventStream<T> = {
+  [k in keyof T]: {
     next(): Promise<ReachEvent<any>>;
     seek(t: BigNumber): void;
     seekNow(): Promise<void>;
@@ -171,3 +190,5 @@ export type ReachStdLib = {
   setMinMillisBetweenRequests(ms: number): void;
   // bigNumberToNumber: (amt: any) => number;
 } & { [x: string]: any };
+
+export type Maybe<T> = ["Some", T] | ["None", null];

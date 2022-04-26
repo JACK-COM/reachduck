@@ -1,3 +1,5 @@
+import { Maybe } from "../types";
+
 export const noOp = () => null;
 
 export const isBrowser = new Function(
@@ -78,9 +80,8 @@ export function setAppVersion(
 /**
  * Unwrap a `Maybe` value. When `mVal[0]` is `"Some"`, `mVal[1]` has a value
  */
-export type Maybe = [val: "Some" | "None", v?: any | null];
 export function fromMaybe(
-  mVal: Maybe,
+  mVal: Maybe<any>,
   format = (v: any) => v,
   fallback?: any
 ): any | null {
