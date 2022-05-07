@@ -55,7 +55,10 @@ export function createConnectorAPI(
 ): NetworkInterface {
   const key = (chain || getBlockchain()) as ChainSymbol;
   if (!CHAINS[key]) return makeAPI(key);
-  if (network) selectBlockchainNetwork(network);
+  if (network) {
+    const net = network === "BetaNet" && chain !== "ALGO" ? "TestNet" : network;
+    selectBlockchainNetwork(net);
+  }
   return CHAINS[key];
 }
 

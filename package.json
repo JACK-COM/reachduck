@@ -1,6 +1,6 @@
 {
   "name": "@jackcom/reachduck",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "description": "A front-end helper for your DApp.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -15,7 +15,9 @@
   "author": "JACKCOM",
   "license": "ISC",
   "scripts": {
-    "bamp": "npm-auto-version && npm i && git add .",
+    "bamp": "npm version patch",
+    "bamp-minor": "npm version minor",
+    "bamp-major": "npm version major",
     "clean": "rm -rf dist/ lib/",
     "build": "npm run clean && tsc",
     "build:dev": "npm run clean && webpack --mode development",
@@ -42,7 +44,6 @@
     "copy-webpack-plugin": "^10.2.1",
     "crypto-browserify": "^3.12.0",
     "jest": "^27.4.7",
-    "npm-auto-version": "^1.0.0",
     "prettier": "^2.5.1",
     "stream-browserify": "^3.0.0",
     "ts-loader": "^9.2.6",
