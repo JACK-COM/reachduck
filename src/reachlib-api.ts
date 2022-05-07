@@ -93,14 +93,10 @@ export function loadReachWithOpts(
   loadStdlibFn: LoadStdlibFn,
   opts: ReachEnvOpts
 ) {
-  if (reach?.connector) {
-    console.warn("Reach already instantiated");
-    return reach;
-  }
-
-  const { chain = "ALGO", network = "TestNet" } = opts;
+  if (reach?.connector) return reach;
 
   // Instantiate Reach object
+  const { chain = "ALGO", network = "TestNet" } = opts;
   const REACH_CONNECTOR_MODE = chain || getBlockchain();
   const providerEnv = {
     ...reachEnvironment(REACH_CONNECTOR_MODE, network),
@@ -134,12 +130,8 @@ function reachEnvironment(
 
   if (providerEnv) return providerEnv;
 
-  if (network !== "MainNet") {
-    const connector = createConnectorAPI(chain);
-    return connector.getProviderEnv(network);
-  }
-
-  return {};
+  const connector = createConnectorAPI(chain);
+  return connector.getProviderEnv(network);
 }
 
 export type ReachEnvOpts = {
