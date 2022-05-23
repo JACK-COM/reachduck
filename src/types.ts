@@ -213,11 +213,14 @@ export type ReachStdLib = {
   waitUntilSecs: (secs: BigNumber) => Promise<BigNumber>;
   /** Confirm that `backend` byte code matches contract `ctcInfo` */
   verifyContract: (ctcInfo: any, backend: BackendModule) => Promise<any>;
-  /** @description the display name of the standard unit of currency for the network */
+  /** Display name of the standard unit of currency for the network */
   standardUnit: string;
-  /** @description the display name of the atomic (smallest) unit of currency for the network */
+  /** Display name of the atomic (smallest) unit of currency for the network */
   atomicUnit: string;
+  /** Returns the minimum balance of an empty `acc` on the current network */
   minimumBalance: BigNumber;
+  /** Returns the minimum balance `acc` can have */
+  minimumBalanceOf(acc: ReachAccount): Promise<BigNumber>;
   formatCurrency(amt: BigNumber, decimals: number): string;
   formatAddress(acc: ReachAccount | string): string;
   unsafeGetMnemonic(acc: ReachAccount): string;
