@@ -4,6 +4,14 @@ export type APIFn<T extends any> = {
     : CtcFnGroup<T[fn]>;
 };
 
+export type SafeAPIFn<T extends any> = {
+  [fn in keyof T]: T[fn] extends (...a: any[]) => Promise<undefined>
+    ? (...a: any[]) => Promise<Maybe<any>>
+    : {
+        [k in keyof T[fn]]: (...a: any[]) => Maybe<any> | Promise<Maybe<any>>;
+      };
+};
+
 export type BackendModule = Record<string, any>;
 
 /** Reach StdLib instance */
@@ -23,20 +31,33 @@ export type CtcLabeledFunc<T extends any> =
 export type CtcFnGroup<T> = {
   [k in keyof T]: CtcFn;
 };
+
 /** Reach contract View representation */
 type CtcViewGroup<T extends BackendModule> =
   | ReturnType<T["_getViews"]>["infos"];
+
+/** Contract `View` that is safe-wrapped as a `Maybe` */
 export type ContractView<T extends BackendModule> = {
   [k in keyof CtcViewGroup<T>]: (
     ...a: any[]
   ) => Promise<
-    | [
-        "Some",
-        UnwrapPromise<
-          ReturnType<ReturnType<T["_getViews"]>["infos"][k]["decode"]>
-        >
-      ]
-    | ["None", null]
+    Maybe<
+      UnwrapPromise<
+        ReturnType<ReturnType<T["_getViews"]>["infos"][k]["decode"]>
+      >
+    >
+  >;
+};
+
+/** Contract `View` that errors if not found */
+export type UnsafeContractView<T extends BackendModule> = {
+  [k in keyof CtcViewGroup<T>]: (
+    ...a: any[]
+  ) => Promise<
+    | UnwrapPromise<
+        ReturnType<ReturnType<T["_getViews"]>["infos"][k]["decode"]>
+      >
+    | Error
   >;
 };
 
@@ -99,8 +120,10 @@ export type ReachContract<T extends BackendModule> = {
   getContractAddress(): Promise<string | number>;
   /** Reach Contract `API` member */
   a: APIFn<T["_APIs"]>;
-  /** Reach Contract `API` member */
+  /** Reach Contract `API` member (error if api not found) */
   apis: APIFn<T["_APIs"]>;
+  /** Reach Contract `API` member (always returns `Maybe` values) */
+  safeApis: APIFn<T["_APIs"]>;
   /** Reach Contract `Participant` member */
   p: InteractFn<T["_Participants"]>;
   /** Reach Contract `Participant` member */
@@ -133,50 +156,100 @@ export type ReachEventStream<T> = {
 
 /** StdLib Helper Interface */
 export type ReachStdLib = {
+  /** Current network for stdlib instance */
   connector: string;
+  /** An object with a single key whose value maps to a function that returns a random number. */
   hasRandom: { random: () => BigNumber };
+  /** An object with a single key whose value maps to `console.log`. Copy into any participant that needs logging. */
   hasConsoleLogger: { log: (...a: any) => void };
+  /** Get balance of `account` (optional: balance of `token` in account) */
   balanceOf: (acc: ReachAccount, token?: number | string) => Promise<BigNumber>;
+  /** Transfer funds between two accounts (optionally specify a token address) */
   transfer: (
     from: ReachAccount,
     to: ReachAccount,
     val?: BigNumber,
     token?: number | string
   ) => Promise<unknown>;
+  /** Connect account address or `networkAccount` instance */
   connectAccount: (networkAccount: any) => Promise<ReachAccount>;
-  newAccountFromSecret: (secret: string) => Promise<ReachAccount>;
+  /** Create an `account` from the supplied secret key */
+  newAccountFromSecret: (secret: any) => Promise<ReachAccount>;
+  /** Create an `account` from the supplied mnemonic */
   newAccountFromMnemonic: (phrase: string) => Promise<ReachAccount>;
+  /** Get the selected `account` from the currently-connected network wallet */
   getDefaultAccount: () => Promise<ReachAccount>;
+  /** Create an account on the current network */
   createAccount: () => Promise<ReachAccount>;
+  /** Get faucet for test funds (if available) */
   getFaucet: () => Promise<ReachAccount>;
+  /** Check if a test account is on `devnet` */
   canFundFromFaucet: () => Promise<boolean>;
   fundFromFaucet: (acc: ReachAccount, balance: BigNumber) => Promise<void>;
+  /** Spawn a test account on `devnet` */
   newTestAccount: (balance: BigNumber) => Promise<ReachAccount>;
+  /** Spawn multiple test accounts on `devnet` */
   newTestAccounts: (
+    /** Number of test accounts to spawn */
     num: number,
+    /** Amount of tokens to allocate each account */
     balance: BigNumber
   ) => Promise<Array<ReachAccount>>;
+  /** Get current block number */
   getNetworkTime: () => Promise<BigNumber>;
-  waitUntilTime: (time: BigNumber) => Promise<BigNumber>;
-  wait: (delta: BigNumber) => Promise<BigNumber>;
+  /** Get current block number in `seconds` (to convert to Unix timestamp) */
   getNetworkSecs: () => Promise<BigNumber>;
+  /** Takes a block number (from the past) and converts it to `seconds` */
+  getTimeSecs(networkTime: any): Promise<BigNumber>;
+  /** Return `t` and disconnect from a contract promise */
+  disconnect<T>(t: T): void;
+  /** Call `f` and wait for a call to `disconnect()` inside `f` */
+  withDisconnect<T>(f: () => Promise<T>): Promise<T>;
+  /** Wait for `delta` number of blocks before proceeding */
+  wait: (delta: BigNumber) => Promise<BigNumber>;
+  /** Like `wait`, but takes (and ends after) a future `block time` */
+  waitUntilTime: (time: BigNumber) => Promise<BigNumber>;
+  /** Like `wait`, but takes (and ends after) `seconds` instead of block count */
   waitUntilSecs: (secs: BigNumber) => Promise<BigNumber>;
+  /** Confirm that `backend` byte code matches contract `ctcInfo` */
   verifyContract: (ctcInfo: any, backend: BackendModule) => Promise<any>;
-  /** @description the display name of the standard unit of currency for the network */
+  /** Display name of the standard unit of currency for the network */
   standardUnit: string;
-  /** @description the display name of the atomic (smallest) unit of currency for the network */
+  /** Display name of the atomic (smallest) unit of currency for the network */
   atomicUnit: string;
+  /** Returns the minimum balance of an empty `acc` on the current network */
   minimumBalance: BigNumber;
-  formatCurrency: (amt: BigNumber, decimals: number) => string;
-  formatAddress: (acc: ReachAccount | string) => string;
-  unsafeGetMnemonic: (acc: ReachAccount) => string;
-  launchToken: (
+  /** Returns the minimum balance `acc` can have */
+  minimumBalanceOf(acc: ReachAccount): Promise<BigNumber>;
+  formatCurrency(amt: BigNumber, decimals: number): string;
+  formatAddress(acc: ReachAccount | string): string;
+  unsafeGetMnemonic(acc: ReachAccount): string;
+  /** Launches a non-network token `name` with symbol `sym`. Launched on the network by the acc that calls it */
+  launchToken(
+    /** Token creator (and reserve) */
     acc: ReachAccount,
+    /** Token name */
     name: string,
+    /** Token symbol (max 8-chars) */
     sym: string,
-    opts?: any
-  ) => any;
+    /** Additional options */
+    opts?: {
+      /** Supply decimals (default is same as network token) */
+      decimals?: number;
+      /** Supply amount (default is largest amount network can handle) */
+      supply?: number;
+      /** Project or project logo url */
+      url?: string;
+      /** Hash of additional token metadata */
+      metadataHash?: string;
+      /** @Algorand Address that can claw back holdings of the token. The default is no clawback address. */
+      clawback?: string;
+      /** @Algorand Optional encoded note about the transaction */
+      note?: Uint8Array;
+    }
+  ): any;
   formatWithDecimals: (atomicUnits: number, tokenDecimals?: number) => string;
+  /** Convert `amt` into atomic units (e.g. dollars expressed as cents) */
   parseCurrency: (amt: any, decimals?: number) => any;
   /**
    * @version 0.1.8-rc-6
@@ -191,4 +264,5 @@ export type ReachStdLib = {
   // bigNumberToNumber: (amt: any) => number;
 } & { [x: string]: any };
 
+/** A safe-wrapped value that may or may not exist. */
 export type Maybe<T> = ["Some", T] | ["None", null];
