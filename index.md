@@ -16,10 +16,14 @@ Regardless, *expect* errors. And silence (or delayed responses), when you report
 
 ---
 
-### Site Menu
+## Site Menu
 * [Home](/index.md)
-* [Methods](/methods.md)
-* [Types](/types.md)
-* [Examples](/examples.md)
+* [Functions](/methods.md)
+  * [General Helpers](./utility_functions.md)
+  * [Blockchain Helpers](./blockchain_functions.md)
+  * [Session Management](./stdlib_functions.md#session-management)
+  * [Stdlib Helpers](./stdlib_functions.md)
+* [Type Definitions (non-exhaustive)](/types.md)
+* [Code examples](/examples.md)
 
 ---

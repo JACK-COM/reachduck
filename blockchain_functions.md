@@ -12,6 +12,7 @@
     - [`NetworkInterface.getWebWalletClientOpts`](#networkinterfacegetwebwalletclientopts)
     - [`NetworkInterface.searchAssetsByName`](#networkinterfacesearchassetsbyname)
     - [`NetworkInterface.searchForTransactions`](#networkinterfacesearchfortransactions)
+  - [Site Menu](#site-menu)
   
 ---
 
@@ -128,4 +129,16 @@ NetworkInterface.searchForTransactions(addr: string, opts?: any): any;
 
 ---
 
-[return home](./index.md)
+## Site Menu
+* [Home](/index.md)
+* [Functions](/methods.md)
+  * [General Helpers](./utility_functions.md)
+  * [Blockchain Helpers](./blockchain_functions.md)
+  * [Session Management](./stdlib_functions.md#session-management)
+  * [Stdlib Helpers](./stdlib_functions.md)
+* [Type Definitions (non-exhaustive)](/types.md)
+* [Code examples](/examples.md)
+
+---
+
+[top](#blockchain-networks)

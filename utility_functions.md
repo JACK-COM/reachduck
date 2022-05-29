@@ -25,7 +25,7 @@ General helper/utility functions. Most functions do not require `stdlib` or othe
   - [`selectBlockchainNetwork`](#selectblockchainnetwork)
   - [`trimByteString`](#trimbytestring)
   - [`truncateString`](#truncatestring)
-- [Site Menu](#site-menu)
+  - [Site Menu](#site-menu)
 
 ---
 
@@ -261,13 +261,15 @@ function truncateString(acct: string, radius = 6): string;
 
 ---
 
-# Site Menu
+## Site Menu
 * [Home](/index.md)
-* [Methods](/methods.md)
-  * [Blockchain Helpers](/blockchain_functions.md)
-  * [General Helpers](/utility_functions.md)
-* [Types](/types.md)
-* [Examples](/examples.md)
+* [Functions](/methods.md)
+  * [General Helpers](./utility_functions.md)
+  * [Blockchain Helpers](./blockchain_functions.md)
+  * [Session Management](./stdlib_functions.md#session-management)
+  * [Stdlib Helpers](./stdlib_functions.md)
+* [Type Definitions (non-exhaustive)](/types.md)
+* [Code examples](/examples.md)
 
 ---
 
