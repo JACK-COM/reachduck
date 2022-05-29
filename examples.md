@@ -3,13 +3,15 @@
 Some example code for how to use `reachduck`.\
 [Return home](/index.md).
 
-## Table of Contents
 
-- [Initialize Reach stdlib](#stdlib-instantiating-stdlib)
-- [Using Reach instance](#stdlib-using-configured-instance)
-- [Connect/Disconnect user wallet](#session-management-connecting-a-user-requires-stdlib)
-- [Check for wallet connect and/or user session](#session-management-check-if-session-active-or-selected-wallet-provider)
-- [Fetch assets (Algorand only)](#user-management-fetch-assets)
+- [Examples](#examples)
+  - [**Reach Standard Library:** Creating an **stdlib** instance](#reach-standard-library-creating-an-stdlib-instance)
+  - [**Reach Standard Library:** Using configured instance](#reach-standard-library-using-configured-instance)
+  - [**Session Management:** Connecting a user (requires `stdlib`)](#session-management-connecting-a-user-requires-stdlib)
+  - [**Session Management:** Check if session active, or selected wallet provider](#session-management-check-if-session-active-or-selected-wallet-provider)
+  - [**User Management:** Fetch assets](#user-management-fetch-assets)
+  - [Site Menu](#site-menu)
+
 
 ---
 
@@ -24,6 +26,8 @@ const stdlib = loadReach(loadStdlib/* , "ETH" | "ALGO" */);
 const account = await stdlib.createAccount()
 ```
 
+[top](#examples)
+
 ---
 
 ## **Reach Standard Library:** Using configured instance 
@@ -36,6 +40,8 @@ const stdlib = createReachAPI()
 // You can create an account using `stdlib`
 const acc = await stdlib.createAccount()
 ```
+
+[top](#examples)
 
 ---
 
@@ -61,6 +67,8 @@ const { account, address, balance } = await connectUser();
 // wallet-connect session)
 disconnectUser(); 
 ```
+[top](#examples)
+
 ---
 
 ## **Session Management:** Check if session active, or selected wallet provider
@@ -74,6 +82,8 @@ console.log(exists); // true | false
 console.log(addr); // "XXXX ..."
 console.log(isWCSession); // if "true", user connected with WalletConnect
 ```
+[top](#examples)
+
 ---
 
 ## **User Management:** Fetch assets
@@ -84,17 +94,30 @@ import { createConnectorAPI } from "@jackcom/reachduck"
 // const algo = createConnectorAPI(); This is the default
 // But for a little more control you can try:
 const algoTestnet = createConnectorAPI("ALGO", "TestNet");
-const assets = await algoTestnet.loadAssets();
+const address = 'XBYLS2E6YI6XXL5BWCAMOA4GTWHXWENZMX5UHXMRNWWUQ7BXCY5WC5TEPA';
+const assets = await algoTestnet.loadAssets(address, 15);
 ```
 
+Note that this returns the raw indexer response (i.e. different result than what you would get from `fetchAssetById`). 
+
+
+[top](#examples)
+
 ---
 
-### Site Menu
+## Site Menu
 * [Home](/index.md)
-* [Methods](/methods.md)
-* [Types](/types.md)
-* [Examples](/examples.md)
+* [Functions](/methods.md)
+  * [General Helpers](./utility_functions.md)
+  * [Blockchain Helpers](./blockchain_functions.md)
+  * [Session Management](./stdlib_functions.md#session-management)
+  * [Stdlib Helpers](./stdlib_functions.md)
+* [Type Definitions (non-exhaustive)](/types.md)
+* [Code examples](/examples.md)
+
+[top](#examples)
 
 ---
 
-[Return home](/index.md)
+
+[top](#examples)
