@@ -33,32 +33,39 @@ export type CtcFnGroup<T> = {
 };
 
 /** Reach contract View representation */
-type CtcViewGroup<T extends BackendModule> =
-  | ReturnType<T["_getViews"]>["infos"];
+type CtcViewGroup<T extends BackendModule> = ReturnType<
+  T["_getViews"]
+>["infos"];
+
+/** Reach contract View Function representation */
+export type CtcViewFn<T extends Record<string, any>> = T["decode"] extends (
+  ...a: any[]
+) => Promise<undefined>
+  ? (...a: any[]) => Promise<Maybe<UnwrapPromise<ReturnType<T["decode"]>>>>
+  : {
+      [k in keyof T]: CtcViewFn<T[k]>;
+    };
 
 /** Contract `View` that is safe-wrapped as a `Maybe` */
 export type ContractView<T extends BackendModule> = {
-  [k in keyof CtcViewGroup<T>]: (
-    ...a: any[]
-  ) => Promise<
-    Maybe<
-      UnwrapPromise<
-        ReturnType<ReturnType<T["_getViews"]>["infos"][k]["decode"]>
-      >
-    >
-  >;
+  [k in keyof CtcViewGroup<T>]: CtcViewFn<CtcViewGroup<T>[k]>;
 };
 
 /** Contract `View` that errors if not found */
 export type UnsafeContractView<T extends BackendModule> = {
-  [k in keyof CtcViewGroup<T>]: (
-    ...a: any[]
-  ) => Promise<
-    | UnwrapPromise<
-        ReturnType<ReturnType<T["_getViews"]>["infos"][k]["decode"]>
-      >
-    | Error
-  >;
+  [k in keyof CtcViewGroup<T>]: CtcViewFn<CtcViewGroup<T>[k]> | Error;
+};
+
+export type AccountAssetData = {
+  /** (Algorand) number of smart contracts created by account  */
+  appsCount: {
+    /** (Algorand) smart contracts count description */
+    description: string;
+    /** (Algorand) smart contracts count  */
+    length: number;
+  };
+  /** Standardized list of blockchain assets  owned by account */
+  assets: (ReachToken | null)[];
 };
 
 /** Unpack a promise to use its value as a type */
@@ -224,6 +231,27 @@ export type ReachStdLib = {
   formatCurrency(amt: BigNumber, decimals: number): string;
   formatAddress(acc: ReachAccount | string): string;
   unsafeGetMnemonic(acc: ReachAccount): string;
+  /** 
+   * @version 0.1.10
+   * - `withDisconnect` calls the given function `f` such that any calls to `disconnect` within `f` will cause `withDisconnect` to return immediately. `withDisconnect` returns the value passed to `disconnect`.
+   * Example
+   * ```typescript
+   * await stdlib.withDisconnect(() => ctcAlice.participants.Alice({
+        ready: () => stdlib.disconnect(null) // 'withDisconnect' returns null
+      }));
+   * ``` */
+  withDisconnect<T>(f: () => Promise<T>): Promise<T>;
+  /** 
+   * @version 0.1.10
+   * - `disconnect` causes the surrounding call to `withDisconnect` to immediately return `t`. `disconnect` must be called from within a function passed to `withDisconnect`, otherwise an exception will be thrown. 
+   * Example
+   * ```typescript
+   * await stdlib.withDisconnect(() => ctcAlice.participants.Alice({
+        ready: () => stdlib.disconnect(null) // 'withDisconnect' returns null
+      }));
+   * ```
+  */
+  disconnect(t: any): void;
   /** Launches a non-network token `name` with symbol `sym`. Launched on the network by the acc that calls it */
   launchToken(
     /** Token creator (and reserve) */

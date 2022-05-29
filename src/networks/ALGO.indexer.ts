@@ -1,5 +1,5 @@
 import { Indexer } from "algosdk";
-import { parseCurrency } from "../reachlib-api";
+import { formatCurrency, parseCurrency } from "../reachlib-api";
 import { getBlockchainNetwork } from "../storage";
 import { ReachToken, NetworkProvider } from "../types";
 import { trimByteString } from "../utils/helpers";
@@ -51,9 +51,26 @@ export function useIndexerClient(): Indexer {
  * @param addr Account address
  * @returns Algorand account information
  */
+export async function fetchAssets(addr: string, limit = 10): Promise<any[]> {
+  const Indexer = useIndexerClient();
+  const result: any = await Indexer.lookupAccountAssets(addr)
+    .includeAll(false)
+    .limit(limit)
+    .do()
+    .catch(() => ({ assets: [] }));
+  return result.assets;
+}
+
+/**
+ * Lookup an Algorand account by its address
+ * @param addr Account address
+ * @returns Algorand account information
+ */
 export async function fetchAccount(addr: string) {
   const Indexer = useIndexerClient();
   const result: any = await Indexer.lookupAccountByID(addr)
+    .includeAll(false)
+    .exclude("all")
     .do()
     .catch(fallbackAcct);
   return result.account;
@@ -163,10 +180,10 @@ function formatAssetMetadata(
 
   return {
     id,
-    amount: parseCurrency(amount, params.decimals),
+    amount: formatCurrency(amount, params.decimals),
     decimals: params.decimals,
-    name: assetName(params),
-    symbol: assetSymbol(params),
+    name: assetName({ ...params, id }),
+    symbol: assetSymbol({ ...params, id }),
     supply: params.total,
     url: params.url,
     verified: params.verified || false,
@@ -174,19 +191,22 @@ function formatAssetMetadata(
 }
 
 function assetName(data: any) {
-  if (data.name) return data.name
-  if (data['name-b64']) return decodeB64String(data['name-b64'])
-  return `Untitled (${assetSymbol(data)})`
+  const fallback = `Unnamed (${assetSymbol(data)})`;
+  if (data.name) return data.name;
+  if (data["name-b64"]) return decodeB64String(data["name-b64"]) || fallback;
+  return fallback;
 }
 
 function assetSymbol(data: any) {
-  if (data['unit-name']) return data['unit-name']
-  if (data['unit-name-b64']) return decodeB64String(data['unit-name-b64'])
-  return `#${data.index}`
+  const fallback = `#${data.id}`;
+  if (data["unit-name"]) return data["unit-name"];
+  if (data["unit-name-b64"])
+    return decodeB64String(data["unit-name-b64"]) || fallback;
+  return fallback;
 }
 
 function decodeB64String(st: string) {
-  return trimByteString(Buffer.from(st, 'base64').toString('utf8'))
+  return trimByteString(Buffer.from(st, "base64").toString("utf8"));
 }
 
 /** Store initial provider settings */

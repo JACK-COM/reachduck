@@ -1,14 +1,26 @@
 import { ReachAccount } from "./types";
 import { createReachAPI } from "./reachlib-api";
-import { createConnectorAPI } from "./networks/index.networks";
+import { createConnectorAPI, NETWORKS } from "./networks/index.networks";
 import { getStorage, isBrowser } from "./utils/helpers";
 
+export type ConnectUserOpts = {
+  fetchAssets?: boolean;
+  fetchBalance?: boolean;
+  initialAssetsLimit?: number;
+};
+const DEFAULT_CONNECT_OPTS: ConnectUserOpts = {
+  fetchAssets: true,
+  fetchBalance: true,
+  initialAssetsLimit: 10
+};
+
 /** Connect user Wallet */
-export async function connectUser() {
+export async function connectUser(connectOpts?: ConnectUserOpts) {
   const { getDefaultAccount } = createReachAPI();
+  const opts = connectOpts || DEFAULT_CONNECT_OPTS;
   try {
     const account: ReachAccount = await getDefaultAccount();
-    return hydrateUser(account);
+    return hydrateUser(account, opts);
   } catch (e: any) {
     throw e;
   }
@@ -46,11 +58,17 @@ export function disconnectUser() {
 }
 
 /** Reconnect user session */
-export async function reconnectUser(a?: string | null) {
+export async function reconnectUser(
+  persisted?: string | null,
+  connectOpts?: ConnectUserOpts
+) {
   const stdlib = createReachAPI();
-  const addr = a || checkSessionExists().addr;
-  if (addr) return hydrateUser(await stdlib.connectAccount({ addr }));
-  return hydrateUser(await stdlib.getDefaultAccount());
+  const addr = persisted || checkSessionExists().addr;
+  const opts = connectOpts || DEFAULT_CONNECT_OPTS;
+  const acc = addr
+    ? await stdlib.connectAccount({ addr })
+    : await stdlib.getDefaultAccount();
+  return hydrateUser(acc, opts);
 }
 
 export type ConnectedUserData = {
@@ -60,13 +78,22 @@ export type ConnectedUserData = {
 } & Record<string, any>;
 
 /** HELPER | Restart user session */
-async function hydrateUser(account: ReachAccount): Promise<ConnectedUserData> {
+async function hydrateUser(
+  account: ReachAccount,
+  opts: ConnectUserOpts
+): Promise<ConnectedUserData> {
+  const { fetchAssets, fetchBalance, initialAssetsLimit = 10 } = opts;
   const stdlib = createReachAPI();
   const chain = createConnectorAPI();
-  const address = stdlib.formatAddress(account.getAddress());
+  const address = stdlib.formatAddress(account);
   const [bigBal, assetUpdates] = await Promise.all([
-    stdlib.balanceOf(account),
-    chain.loadAssets(address),
+    fetchBalance
+      ? stdlib.formatWithDecimals(
+          await stdlib.balanceOf(account),
+          NETWORKS[chain.chain].decimals
+        )
+      : 0,
+    fetchAssets ? chain.loadAssets(address, initialAssetsLimit) : [],
   ]);
 
   persistUser(address);
