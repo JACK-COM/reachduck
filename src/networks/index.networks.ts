@@ -18,7 +18,10 @@ export type NetworkInterface = {
   /** Fetch account details from network */
   fetchAccount(acc: string | any): any | Promise<any>;
   /** Fetch an asset/token by its ID from the chain's block explorer */
-  fetchAssetById(assetId: number): Promise<ReachToken | null>;
+  fetchAssetById(
+    assetId: number,
+    assetBalance?: number
+  ): Promise<ReachToken | null>;
   /** Returns a blockchain-specific configuration for `stdlib` */
   getProviderEnv(provider?: NetworkProvider & string): any;
   /** Fetch account assets from network. May optionally takes a list of assets addresses */
