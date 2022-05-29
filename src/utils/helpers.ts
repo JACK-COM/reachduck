@@ -77,15 +77,30 @@ export function setAppVersion(
   return version;
 }
 
+/** Assert that `val` represents a `Maybe` value */
+export function asMaybeNone(): Maybe<null> {
+  return ["None", null];
+}
+
+/** Assert that `val` represents a `Maybe` value */
+export function asMaybe<T extends any>(val?: T): Maybe<T> {
+  // Treat `0` as a truthy value
+  if (val === 0) return ["Some", val];
+  if (!val || isNone(val)) return ["None", null];
+  return ["Some", val as T];
+}
+
 /**
  * Unwrap a `Maybe` value. When `mVal[0]` is `"Some"`, `mVal[1]` has a value
  */
-export function fromMaybe(
-  mVal: Maybe<any>,
-  format = (v: any) => v,
+export function fromMaybe<T>(
+  mVal: Maybe<T>,
+  format = (v: T) => v,
   fallback?: any
-): any | null {
-  return mVal[0] === "Some" ? format(mVal[1]) : fallback || mVal[1];
+): T | null {
+  if (isNone(mVal)) return fallback || mVal[1];
+  const fmt = mVal[1] === null ? mVal[1] : (format(mVal[1]) as T);
+  return fmt;
 }
 
 /** Format currency in user locale (e.g. `fn(1000) -> 1,000) */
@@ -137,6 +152,28 @@ export function formatNumberShort(val: string | number | bigint, round = 2) {
 /** Assert that `path` represents an Image file */
 export function isImageFile(path: string) {
   return /\.(gif|jpe?g|tiff?|png|webp|bmp)$/i.test(path);
+}
+
+/** Assert that `val` represents a falsy `Maybe` value */
+export function isNone(val: any = null) {
+  return isMaybe(val) && val[0] === "None" && val[1] === null;
+}
+
+/** Assert that `val` represents a truthy `Maybe` value */
+export function isSome(val: any = null) {
+  return isMaybe(val) && val[0] === "Some";
+}
+
+/** Assert that `val` represents a `Maybe` value */
+export function isMaybe(val: any = null) {
+  const isValidArray = Array.isArray(val) && val.length === 2;
+  const hasSomeOrNone = isValidArray && ["Some", "None"].includes(val[0]);
+  return isValidArray && hasSomeOrNone;
+}
+
+/** Assert that `tokenId` represents a network token id */
+export function isNetworkToken(tokenId: string | number | null = "") {
+  return [0, "0", null].includes(tokenId);
 }
 
 /** Assert that `path` represents a Video file */

@@ -1,3 +1,4 @@
+import { Maybe } from "../types";
 import * as H from "./helpers";
 
 const localStorage = H.getStorage();
@@ -20,27 +21,72 @@ describe("Helpers → checkVersionChanged", () => {
   });
 });
 
-describe("Helpers → fromMaybe", () => {
-  const { fromMaybe } = H;
-  const isNone: H.Maybe = ["None", null];
-  const isSome: H.Maybe = ["Some", 1];
+describe("Helpers → `Maybe` values", () => {
+  const { asMaybe, fromMaybe, isMaybe } = H;
+  const none = H.asMaybeNone();
+  const maybeNone = asMaybe();
+  const maybeSome = asMaybe(1);
+
+  function AssertTruthyMaybe<T>(val: Maybe<T>, comparison: T) {
+    // Type check
+    expect(isMaybe(val)).toStrictEqual(true);
+    expect(H.isSome(val)).toStrictEqual(true);
+    expect(H.isNone(val)).toStrictEqual(false);
+    // Value check
+    expect(val[0]).toStrictEqual("Some");
+    expect(JSON.stringify(val[1])).toStrictEqual(JSON.stringify(comparison));
+  }
+
+  function AssertFalsyMaybe<T>(val: Maybe<T>) {
+    // Type check
+    expect(isMaybe(val)).toStrictEqual(true);
+    expect(H.isSome(val)).toStrictEqual(false);
+    expect(H.isNone(val)).toStrictEqual(true);
+    // Value check
+    expect(val[0]).toStrictEqual("None");
+    expect(val[1]).toStrictEqual(null);
+  }
+
+  it("Detects a `Maybe` value", () => {
+    expect(isMaybe(maybeNone)).toStrictEqual(true);
+    expect(isMaybe(maybeSome)).toStrictEqual(true);
+    expect(isMaybe([maybeSome])).toStrictEqual(false);
+    expect(isMaybe([])).toStrictEqual(false);
+    expect(isMaybe([1])).toStrictEqual(false);
+    expect(isMaybe([1, 2])).toStrictEqual(false);
+    expect(isMaybe([1, "true"])).toStrictEqual(false);
+    expect(isMaybe(["some", 1])).toStrictEqual(false);
+    expect(isMaybe("some")).toStrictEqual(false);
+  });
+
+  it("Creates a falsy `Maybe` value", () => {
+    AssertFalsyMaybe(none);
+  });
+
+  it("Wraps a `Maybe` value", () => {
+    AssertFalsyMaybe(maybeNone);
+    AssertTruthyMaybe(maybeSome, 1);
+  });
 
   it("Unwraps a `Maybe` value", () => {
-    expect(fromMaybe(isNone)).toStrictEqual(null);
-    expect(fromMaybe(isSome)).toStrictEqual(1);
+    AssertFalsyMaybe(maybeNone);
+    expect(fromMaybe(maybeNone)).toStrictEqual(null);
+
+    AssertTruthyMaybe(maybeSome, 1);
+    expect(fromMaybe(maybeSome)).toStrictEqual(1);
   });
 
   it("Applies a formatter if provided", () => {
     const fmt = (v: number) => v + 1;
-    expect(fromMaybe(isSome, fmt)).toStrictEqual(2);
-    expect(fromMaybe(isSome)).toStrictEqual(1);
+    expect(fromMaybe(maybeSome, fmt)).toStrictEqual(2);
+    expect(fromMaybe(maybeSome)).toStrictEqual(1);
   });
 
   it("Returns a fallback if provided", () => {
     const fb = 88;
-    expect(fromMaybe(isNone, undefined, fb)).toStrictEqual(fb);
-    expect(fromMaybe(isNone, undefined)).toStrictEqual(null);
-    expect(fromMaybe(isSome, undefined)).toStrictEqual(1);
+    expect(fromMaybe(maybeNone, undefined, fb)).toStrictEqual(fb);
+    expect(fromMaybe(maybeNone, undefined)).toStrictEqual(null);
+    expect(fromMaybe(maybeSome, undefined)).toStrictEqual(1);
   });
 });
 
@@ -63,7 +109,7 @@ describe("Helpers → Number helpers", () => {
     expect(formatNumberShort(1)).toStrictEqual("1");
     expect(formatNumberShort(100)).toStrictEqual("100");
     expect(formatNumberShort(10000)).toStrictEqual("10K");
-    expect(formatNumberShort('199968399000000')).toStrictEqual('199.96T')
+    expect(formatNumberShort("199968399000000")).toStrictEqual("199.96T");
     let lg: number | bigint | string = 1_550_000;
     expect(formatNumberShort(lg)).toStrictEqual("1.55M");
     expect(formatNumberShort(lg, 1)).toStrictEqual("1.5M");
@@ -111,6 +157,15 @@ describe("Helpers → Number helpers", () => {
     expect(formatCurrencyLocale(num)).toStrictEqual("1,000");
     expect(formatCurrencyLocale(num, locale)).toStrictEqual("1.000");
     expect(formatCurrencyLocale(num, locale, currency)).not.toBe("1.000");
+  });
+
+  it("Identifies a network token", () => {
+    expect(H.isNetworkToken(123)).toBe(false);
+    expect(H.isNetworkToken("123")).toBe(false);
+    expect(H.isNetworkToken()).toBe(false);
+    expect(H.isNetworkToken("0")).toBe(true);
+    expect(H.isNetworkToken(0)).toBe(true);
+    expect(H.isNetworkToken(null)).toBe(true);
   });
 });
 

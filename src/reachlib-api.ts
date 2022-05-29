@@ -102,7 +102,8 @@ export function loadReachWithOpts(
     ...reachEnvironment(REACH_CONNECTOR_MODE, network),
     ...(opts.providerEnv || {}),
   };
-  reach = loadStdlibFn({ REACH_CONNECTOR_MODE });
+  const REACH_NO_WARN = opts.showReachContractWarnings === true ? undefined : "Y";
+  reach = loadStdlibFn({ REACH_CONNECTOR_MODE, REACH_NO_WARN });
   if (opts.walletFallback) {
     reach.setWalletFallback(
       reach.walletFallback({
@@ -138,6 +139,7 @@ export type ReachEnvOpts = {
   chain?: T.ChainSymbol & string;
   network?: T.NetworkProvider & string;
   providerEnv?: any;
+  showReachContractWarnings?: boolean;
   walletFallback?: {
     MyAlgoConnect?: any;
     WalletConnect?: any;

@@ -1,9 +1,11 @@
+import { ReachToken, AccountAssetData } from "../types";
 import {
   fetchAccount,
   fetchAssetById,
   getProviderEnv,
   searchForTransactions,
   searchAssetsByName,
+  fetchAssets,
 } from "./ALGO.indexer";
 
 export const AlgoInterface = {
@@ -24,21 +26,21 @@ async function getAccount(address: string): Promise<any> {
 }
 
 /** Load account assets */
-async function loadAssets(addr: string) {
-  const res = await fetchAccount(addr);
-  const { assets = [], "created-apps": apps = [] } = res;
-  const { length } = apps;
-  const appsCount: any = { length };
-  const plural = appsCount.length === 1 ? "app" : "apps";
-  appsCount.description = `${length} ${plural} created`;
-  const updates: any = { appsCount };
+async function loadAssets(addr: string, limit = 10): Promise<AccountAssetData> {
+  // Legacy data
+  const length = 0;
+  const appsCount = { length, description: `${length} apps fetched` };
+  const updates = { appsCount, assets: [] as (ReachToken | null)[] };
 
+  const assets = await fetchAssets(addr, limit);
   if (assets.length) {
-    const meta = assets.map((a: any) =>
-      fetchAssetById(a["asset-id"], a.amount)
+    // Fetch asset metadata
+    const meta: Promise<ReachToken | null>[] = [];
+    assets.forEach((a: any) =>
+      meta.push(fetchAssetById(a["asset-id"], a.amount))
     );
-    updates.assets = await Promise.all(meta);
+    const resolved = await Promise.all(meta);
+    updates.assets = resolved;
   } else updates.assets = [];
-
   return updates;
 }
