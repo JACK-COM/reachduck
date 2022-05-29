@@ -77,12 +77,12 @@ export function setAppVersion(
   return version;
 }
 
-/** Assert that `val` represents a `Maybe` value */
+/** Create a `Maybe` value that resolves to `null` */
 export function asMaybeNone(): Maybe<null> {
   return ["None", null];
 }
 
-/** Assert that `val` represents a `Maybe` value */
+/** Wrap `val` as a `Maybe` value-type */
 export function asMaybe<T extends any>(val?: T): Maybe<T> {
   // Treat `0` as a truthy value
   if (val === 0) return ["Some", val];
@@ -90,9 +90,7 @@ export function asMaybe<T extends any>(val?: T): Maybe<T> {
   return ["Some", val as T];
 }
 
-/**
- * Unwrap a `Maybe` value. When `mVal[0]` is `"Some"`, `mVal[1]` has a value
- */
+/** Resolve a `Maybe` value. When `mVal[0]` is `"Some"`, `mVal[1]` has a value */
 export function fromMaybe<T>(
   mVal: Maybe<T>,
   format = (v: T) => v,
