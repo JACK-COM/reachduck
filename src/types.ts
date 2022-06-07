@@ -1,11 +1,11 @@
 export type APIFn<T extends any> = {
-  [fn in keyof T]: T[fn] extends (...a: any[]) => Promise<undefined>
+  [fn in keyof T]: T[fn] extends (...a: any[]) => Promise<unknown>
     ? (...a: any[]) => Promise<any>
     : CtcFnGroup<T[fn]>;
 };
 
 export type SafeAPIFn<T extends any> = {
-  [fn in keyof T]: T[fn] extends (...a: any[]) => Promise<undefined>
+  [fn in keyof T]: T[fn] extends (...a: any[]) => Promise<unknown>
     ? (...a: any[]) => Promise<Maybe<any>>
     : {
         [k in keyof T[fn]]: (...a: any[]) => Maybe<any> | Promise<Maybe<any>>;
@@ -38,9 +38,9 @@ type CtcViewGroup<T extends BackendModule> = ReturnType<
 >["infos"];
 
 /** Reach contract View Function representation */
-export type CtcViewFn<T extends Record<string, any>> = T["decode"] extends (
-  ...a: any[]
-) => Promise<undefined>
+export type CtcViewFn<T extends Record<string, any>> = T extends {
+  decode: (...a: any[]) => Promise<unknown>;
+}
   ? (...a: any[]) => Promise<Maybe<UnwrapPromise<ReturnType<T["decode"]>>>>
   : {
       [k in keyof T]: CtcViewFn<T[k]>;
