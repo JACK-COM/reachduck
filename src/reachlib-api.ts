@@ -77,7 +77,7 @@ export function loadReach(
   // Instantiate Reach object
   void reachEnvironment(chain, network);
   reach = loadStdlibFn(chain);
-  reach.setProviderByName(network);
+  if (chain === "ALGO") reach.setProviderByName(network);
 
   return reach;
 }
@@ -102,7 +102,8 @@ export function loadReachWithOpts(
     ...reachEnvironment(REACH_CONNECTOR_MODE, network),
     ...(opts.providerEnv || {}),
   };
-  const REACH_NO_WARN = opts.showReachContractWarnings === true ? undefined : "Y";
+  const REACH_NO_WARN =
+    opts.showReachContractWarnings === true ? undefined : "Y";
   reach = loadStdlibFn({ REACH_CONNECTOR_MODE, REACH_NO_WARN });
   if (opts.walletFallback) {
     reach.setWalletFallback(
@@ -111,7 +112,9 @@ export function loadReachWithOpts(
         providerEnv,
       })
     );
-  } else reach.setProviderByEnv(providerEnv);
+  } else if (Object.keys(providerEnv).length) {
+    reach.setProviderByEnv(providerEnv);
+  }
 
   return reach;
 }
@@ -176,10 +179,18 @@ export async function tokenMetadata(
   acc: T.ReachAccount
 ): Promise<T.ReachToken> {
   const { balanceOf } = createReachAPI();
-  const fetchBalance = () => withTimeout(balanceOf(acc, tokenId));
+  const fetchBalance = () => {
+    return getBlockchain() === "ALGO"
+      ? withTimeout(balanceOf(acc, tokenId))
+      : Promise.resolve(0);
+  };
   const fetchToken = () => {
-    const chain = createConnectorAPI();
-    return withTimeout(chain.fetchAssetById(tokenId), null);
+    if (getBlockchain() === "ALGO") {
+      const chain = createConnectorAPI();
+      return withTimeout(chain.fetchAssetById(tokenId), null);
+    }
+
+    return acc.tokenMetadata(tokenId);
   };
   const [metadata, bal] = await Promise.all([fetchToken(), fetchBalance()]);
   if (!metadata) throw new Error(`Token "${tokenId}" not found`);

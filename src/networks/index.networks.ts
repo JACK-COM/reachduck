@@ -7,7 +7,7 @@ const CHAINS: Record<ChainSymbol, NetworkInterface> = {
   ALGO: makeAPI("ALGO", ALGO),
   ETH: makeAPI("ETH", {
     getProviderEnv() {
-      return { ETH_NET: "ropsten" };
+      return {}
     },
   }),
 };
