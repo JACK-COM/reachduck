@@ -41,7 +41,7 @@ function createMemoryStorage(): Storage {
 
     setItem(key: string, value: any) {
       data[key] = value;
-    },
+    }
   };
 }
 

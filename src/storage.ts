@@ -1,15 +1,12 @@
 import { getStorage, isBrowser } from "./utils/helpers";
 import * as T from "./types";
 
-type Provider = "TestNet" | "MainNet";
-const PROVIDERS: { [name: string]: Provider } = {
-  TESTNET: "TestNet",
-  MAINNET: "MainNet",
-};
-
+/** @internal */
 const NETWORK_STORAGE_KEY = "rd-chain";
+/** @internal */
 const NETWORK_PROVIDER_KEY = "rd-prov";
 
+/** Remove locally-stored blockchain and provider data */
 export function clearBlockchain() {
   const storage = getStorage();
   storage.removeItem(NETWORK_STORAGE_KEY);
@@ -20,7 +17,7 @@ export function clearBlockchain() {
 export function getBlockchainNetwork(): string & T.NetworkProvider {
   const stored =
     getStorage().getItem(NETWORK_PROVIDER_KEY) ||
-    selectBlockchainNetwork(PROVIDERS.TESTNET);
+    selectBlockchainNetwork("TestNet");
   return stored as T.NetworkProvider;
 }
 
@@ -47,15 +44,31 @@ export function selectBlockchain(
 /**
  * Set network provider preference `MainNet` or `TestNet`.
  * ⚠️ WARNING: Triggers window reload */
+export function validateProvider(prov: string) {
+  /** @internal */
+  const valid: T.NetworkProvider[] = [
+    "TestNet",
+    "BetaNet",
+    "MainNet",
+    "ALGO-browser",
+    "ALGO-devnet",
+    "ALGO-live",
+    "ETH-browser",
+    "ETH-devnet",
+    "ETH-live"
+  ];
+  return valid.includes(prov as T.NetworkProvider);
+}
+
+/**
+ * Set network provider preference `MainNet` or `TestNet`.
+ * ⚠️ WARNING: Triggers window reload */
 export function selectBlockchainNetwork(
   prov: T.NetworkProvider,
   reload = false
 ): string {
-  const valid: T.NetworkProvider[] = ["TestNet", "BetaNet", "MainNet"];
-  if (!valid.includes(prov))
-    throw new Error(
-      `Invalid provider selection: expected one of "TestNet", "BetaNet", "MainNet"; got "${prov}"`
-    );
+  if (!validateProvider(prov))
+    throw new Error(`Invalid provider selection: got "${prov}"`);
 
   getStorage().setItem(NETWORK_PROVIDER_KEY, prov);
   if (reload && isBrowser()) window.location.reload();

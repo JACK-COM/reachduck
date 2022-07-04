@@ -6,6 +6,7 @@ import {
   getBlockchainNetwork,
   selectBlockchain,
   selectBlockchainNetwork,
+  validateProvider
 } from "./storage";
 
 type LoadStdlibFn = { (args: any): any };
@@ -76,8 +77,12 @@ export function loadReach(
 
   // Instantiate Reach object
   void reachEnvironment(chain, network);
-  reach = loadStdlibFn(chain);
-  if (chain === "ALGO") reach.setProviderByName(network);
+  if (isDevnetProvider(network)) {
+    reach = loadStdlibFn(network);
+  } else {
+    reach = loadStdlibFn(chain);
+    if (chain === "ALGO") reach.setProviderByName(network);
+  }
 
   return reach;
 }
@@ -98,18 +103,29 @@ export function loadReachWithOpts(
   // Instantiate Reach object
   const { chain = "ALGO", network = "TestNet" } = opts;
   const REACH_CONNECTOR_MODE = chain || getBlockchain();
+  // Override `stdlib` load style if devnet provider
+  if (isDevnetProvider(network)) return loadReach(loadStdlibFn, chain, network);
+  if (
+    typeof opts.providerEnv === "string" &&
+    isDevnetProvider(opts.providerEnv)
+  ) {
+    return loadReach(loadStdlibFn, chain, opts.providerEnv as any);
+  }
+
   const providerEnv = {
     ...reachEnvironment(REACH_CONNECTOR_MODE, network),
-    ...(opts.providerEnv || {}),
+    ...(opts.providerEnv || {})
   };
-  const REACH_NO_WARN =
-    opts.showReachContractWarnings === true ? undefined : "Y";
-  reach = loadStdlibFn({ REACH_CONNECTOR_MODE, REACH_NO_WARN });
+  const stdlibOpts: any = { REACH_CONNECTOR_MODE };
+  if (opts.showReachContractWarnings === true) {
+    stdlibOpts.REACH_NO_WARN = "Y";
+  }
+  reach = loadStdlibFn(stdlibOpts);
   if (opts.walletFallback) {
     reach.setWalletFallback(
       reach.walletFallback({
         ...opts.walletFallback,
-        providerEnv,
+        providerEnv
       })
     );
   } else if (Object.keys(providerEnv).length) {
@@ -217,7 +233,17 @@ export async function withTimeout<T>(
 }
 
 /**
- * @reach_helper
+ * Assert that `prov` represents a DevNet provider. If true,
+ * `prov` will be the only argument used to load `stdlib`
+ * @param prov Network provider value to check
+ */
+export function isDevnetProvider(prov: string) {
+  const devnets = /(-browser|-live|-devnet)$/;
+  return validateProvider(prov) && devnets.test(prov);
+}
+
+/**
+ * @internal
  * Format token metadata from `tokenMetadata` API request */
 function formatReachToken(tokenId: any, amount: any, data: any): T.ReachToken {
   const id = parseAddress(tokenId);
@@ -232,10 +258,14 @@ function formatReachToken(tokenId: any, amount: any, data: any): T.ReachToken {
     amount,
     supply: data.supply,
     decimals: data.decimals,
-    verified: data.verified || false,
+    verified: data.verified || false
   };
 }
 
+/**
+ * @internal
+ * @param decimals
+ */
 function parseNetworkDecimals(decimals?: number) {
   const key = createReachAPI().connector as T.ChainSymbol;
   return isNaN(Number(decimals)) ? NETWORKS[key].decimals || 0 : decimals;

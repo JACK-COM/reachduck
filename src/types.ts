@@ -83,7 +83,23 @@ export type NetworkData = {
   decimals?: number;
 };
 
-export type NetworkProvider = ("TestNet" | "BetaNet" | "MainNet") & string;
+// "CFX"
+// "CFX-browser"
+// "CFX-devnet"
+// "CFX-live"
+
+export type NetworkProvider = (
+  | "TestNet"
+  | "BetaNet"
+  | "MainNet"
+  | "ALGO-browser"
+  | "ALGO-devnet"
+  | "ALGO-live"
+  | "ETH-browser"
+  | "ETH-devnet"
+  | "ETH-live"
+) &
+  string;
 
 export type NetworksMap = Record<ChainSymbol, NetworkData>;
 
