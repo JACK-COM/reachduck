@@ -5,7 +5,7 @@ import {
   getBlockchain,
   getBlockchainNetwork,
   selectBlockchain,
-  selectBlockchainNetwork,
+  selectBlockchainNetwork
 } from "./storage";
 
 type LoadStdlibFn = { (args: any): any };
@@ -76,8 +76,12 @@ export function loadReach(
 
   // Instantiate Reach object
   void reachEnvironment(chain, network);
-  reach = loadStdlibFn(chain);
-  if (chain === "ALGO") reach.setProviderByName(network);
+  if (isDevnetProvider(network)) {
+    reach = loadStdlibFn(network);
+  } else {
+    reach = loadStdlibFn(chain);
+    if (chain === "ALGO") reach.setProviderByName(network);
+  }
 
   return reach;
 }
@@ -100,7 +104,7 @@ export function loadReachWithOpts(
   const REACH_CONNECTOR_MODE = chain || getBlockchain();
   const providerEnv = {
     ...reachEnvironment(REACH_CONNECTOR_MODE, network),
-    ...(opts.providerEnv || {}),
+    ...(opts.providerEnv || {})
   };
   const REACH_NO_WARN =
     opts.showReachContractWarnings === true ? undefined : "Y";
@@ -109,7 +113,7 @@ export function loadReachWithOpts(
     reach.setWalletFallback(
       reach.walletFallback({
         ...opts.walletFallback,
-        providerEnv,
+        providerEnv
       })
     );
   } else if (Object.keys(providerEnv).length) {
@@ -217,6 +221,15 @@ export async function withTimeout<T>(
 }
 
 /**
+ * Assert that `path` represents a DevNet provider. If true,
+ * `path` will be the only argument used to load `stdlib`
+ */
+function isDevnetProvider(path: string) {
+  const devnets = /(-browser|-live|-devnet)$/;
+  return devnets.test(path);
+}
+
+/**
  * @reach_helper
  * Format token metadata from `tokenMetadata` API request */
 function formatReachToken(tokenId: any, amount: any, data: any): T.ReachToken {
@@ -232,7 +245,7 @@ function formatReachToken(tokenId: any, amount: any, data: any): T.ReachToken {
     amount,
     supply: data.supply,
     decimals: data.decimals,
-    verified: data.verified || false,
+    verified: data.verified || false
   };
 }
 

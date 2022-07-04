@@ -5,7 +5,7 @@ import {
   getBlockchain,
   getBlockchainNetwork,
   selectBlockchain,
-  selectBlockchainNetwork,
+  selectBlockchainNetwork
 } from "./storage";
 
 describe("Storage tests", () => {
@@ -46,12 +46,9 @@ describe("Storage tests", () => {
   it("Requires Blockchain network selection to be one of TestNet, BetaNet, MainNet", () => {
     expect(getBlockchainNetwork()).toBe("TestNet");
 
-    const badNet = "NotANet";
-    expect(() =>
-      // @ts-expect-error
-      selectBlockchainNetwork(badNet)
-    ).toThrow(
-      `Invalid provider selection: expected one of "TestNet", "BetaNet", "MainNet"; got "${badNet}"`
+    const badNet: any = "NotANet";
+    expect(() => selectBlockchainNetwork(badNet)).toThrow(
+      `Invalid provider selection: got "${badNet}"`
     );
   });
 });
