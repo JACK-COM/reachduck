@@ -5,7 +5,8 @@ import {
   getBlockchain,
   getBlockchainNetwork,
   selectBlockchain,
-  selectBlockchainNetwork
+  selectBlockchainNetwork,
+  validateProvider
 } from "./storage";
 
 type LoadStdlibFn = { (args: any): any };
@@ -102,13 +103,24 @@ export function loadReachWithOpts(
   // Instantiate Reach object
   const { chain = "ALGO", network = "TestNet" } = opts;
   const REACH_CONNECTOR_MODE = chain || getBlockchain();
+  // Override `stdlib` load style if devnet provider
+  if (isDevnetProvider(network)) return loadReach(loadStdlibFn, chain, network);
+  if (
+    typeof opts.providerEnv === "string" &&
+    isDevnetProvider(opts.providerEnv)
+  ) {
+    return loadReach(loadStdlibFn, chain, opts.providerEnv as any);
+  }
+
   const providerEnv = {
     ...reachEnvironment(REACH_CONNECTOR_MODE, network),
     ...(opts.providerEnv || {})
   };
-  const REACH_NO_WARN =
-    opts.showReachContractWarnings === true ? undefined : "Y";
-  reach = loadStdlibFn({ REACH_CONNECTOR_MODE, REACH_NO_WARN });
+  const stdlibOpts: any = { REACH_CONNECTOR_MODE };
+  if (opts.showReachContractWarnings === true) {
+    stdlibOpts.REACH_NO_WARN = "Y";
+  }
+  reach = loadStdlibFn(stdlibOpts);
   if (opts.walletFallback) {
     reach.setWalletFallback(
       reach.walletFallback({
@@ -221,16 +233,17 @@ export async function withTimeout<T>(
 }
 
 /**
- * Assert that `path` represents a DevNet provider. If true,
- * `path` will be the only argument used to load `stdlib`
+ * Assert that `prov` represents a DevNet provider. If true,
+ * `prov` will be the only argument used to load `stdlib`
+ * @param prov Network provider value to check
  */
-function isDevnetProvider(path: string) {
+export function isDevnetProvider(prov: string) {
   const devnets = /(-browser|-live|-devnet)$/;
-  return devnets.test(path);
+  return validateProvider(prov) && devnets.test(prov);
 }
 
 /**
- * @reach_helper
+ * @internal
  * Format token metadata from `tokenMetadata` API request */
 function formatReachToken(tokenId: any, amount: any, data: any): T.ReachToken {
   const id = parseAddress(tokenId);
@@ -249,6 +262,10 @@ function formatReachToken(tokenId: any, amount: any, data: any): T.ReachToken {
   };
 }
 
+/**
+ * @internal
+ * @param decimals
+ */
 function parseNetworkDecimals(decimals?: number) {
   const key = createReachAPI().connector as T.ChainSymbol;
   return isNaN(Number(decimals)) ? NETWORKS[key].decimals || 0 : decimals;

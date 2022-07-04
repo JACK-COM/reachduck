@@ -1,25 +1,12 @@
 import { getStorage, isBrowser } from "./utils/helpers";
 import * as T from "./types";
 
-const PROVIDERS: { [name: string]: T.NetworkProvider } = {
-  TESTNET: "TestNet",
-  MAINNET: "MainNet"
-};
-const valid: T.NetworkProvider[] = [
-  "TestNet",
-  "BetaNet",
-  "MainNet",
-  "ALGO-browser",
-  "ALGO-devnet",
-  "ALGO-live",
-  "ETH-browser",
-  "ETH-devnet",
-  "ETH-live"
-];
-
+/** @internal */
 const NETWORK_STORAGE_KEY = "rd-chain";
+/** @internal */
 const NETWORK_PROVIDER_KEY = "rd-prov";
 
+/** Remove locally-stored blockchain and provider data */
 export function clearBlockchain() {
   const storage = getStorage();
   storage.removeItem(NETWORK_STORAGE_KEY);
@@ -57,11 +44,30 @@ export function selectBlockchain(
 /**
  * Set network provider preference `MainNet` or `TestNet`.
  * ⚠️ WARNING: Triggers window reload */
+export function validateProvider(prov: string) {
+  /** @internal */
+  const valid: T.NetworkProvider[] = [
+    "TestNet",
+    "BetaNet",
+    "MainNet",
+    "ALGO-browser",
+    "ALGO-devnet",
+    "ALGO-live",
+    "ETH-browser",
+    "ETH-devnet",
+    "ETH-live"
+  ];
+  return valid.includes(prov as T.NetworkProvider);
+}
+
+/**
+ * Set network provider preference `MainNet` or `TestNet`.
+ * ⚠️ WARNING: Triggers window reload */
 export function selectBlockchainNetwork(
   prov: T.NetworkProvider,
   reload = false
 ): string {
-  if (!valid.includes(prov))
+  if (!validateProvider(prov))
     throw new Error(`Invalid provider selection: got "${prov}"`);
 
   getStorage().setItem(NETWORK_PROVIDER_KEY, prov);
