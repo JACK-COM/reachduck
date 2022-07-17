@@ -11,11 +11,11 @@ import {
 
 type LoadStdlibFn = { (args: any): any };
 
+/** @internal Error message for uninstantiated `stdlib` */
 const UNINSTANTIATED = `
 QUACK! ReachStdlib is not instantiated. See "@jackcom/reachduck" docs for info.
 `;
-/**
- * @reach_helper `StdLib` instance */
+/** @internal `StdLib` instance */
 let reach: T.ReachStdLib;
 
 /**
@@ -36,8 +36,8 @@ export async function checkHasToken(acc: T.ReachAccount, token: any) {
 /**
  * @reach_helper
  * Format address for `networkAccount` instance */
-export function formatAddress(acc: T.ReachAccount) {
-  return createReachAPI().formatAddress(acc.getAddress());
+export function formatAddress(acc: T.ReachAccount | string) {
+  return createReachAPI().formatAddress(acc);
 }
 
 /**
