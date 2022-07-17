@@ -71,8 +71,9 @@ export type AccountAssetData = {
 /** Unpack a promise to use its value as a type */
 type UnwrapPromise<T> = T extends Promise<infer A> ? A : T;
 
+/** An interact function */
 export type InteractFn<T extends BackendModule> = {
-  [fn in keyof T]: (interact: any, ctcInfo?: string | number) => any;
+  [fn in keyof T]: { <A>(interact: A, ctcInfo?: string | number | BigNumber): any };
 };
 
 /** `NetworkData` describes single network data-item (for e.g. Ethereum) */
@@ -88,6 +89,7 @@ export type NetworkData = {
 // "CFX-devnet"
 // "CFX-live"
 
+/** Blockchain network instance */
 export type NetworkProvider = (
   | "TestNet"
   | "BetaNet"
@@ -169,11 +171,16 @@ export type ReachEvent<T extends any> = { when: any; what: T };
 /** `ReachEvent` is an `Event` emitted from a contract `EventStream` */
 export type ReachEventStream<T> = {
   [k in keyof T]: {
-    next(): Promise<ReachEvent<any>>;
+    /** Emit the next event in queue */
+    next<A = T[k]>(): Promise<ReachEvent<A>>;
+    /** Move queue pointer to (and return events after) block-time `t` */
     seek(t: BigNumber): void;
+    /** Move queue pointer to (and return events after) block-time `now` */
     seekNow(): Promise<void>;
+    /** Report the last `block time` when an event was emitted */
     lastTime(): Promise<BigNumber>;
-    monitor(handler: (e: ReachEvent<any>) => void): Promise<void>;
+    /** Handle all events emitted by this stream */
+    monitor<A = T[k]>(handler: (e: ReachEvent<A>) => void): Promise<void>;
   };
 };
 
@@ -208,6 +215,7 @@ export type ReachStdLib = {
   getFaucet: () => Promise<ReachAccount>;
   /** Check if a test account is on `devnet` */
   canFundFromFaucet: () => Promise<boolean>;
+  /** Fund a `devnet` account */
   fundFromFaucet: (acc: ReachAccount, balance: BigNumber) => Promise<void>;
   /** Spawn a test account on `devnet` */
   newTestAccount: (balance: BigNumber) => Promise<ReachAccount>;
@@ -244,8 +252,11 @@ export type ReachStdLib = {
   minimumBalance: BigNumber;
   /** Returns the minimum balance `acc` can have */
   minimumBalanceOf(acc: ReachAccount): Promise<BigNumber>;
+  /** Format a currency value into its atomic units */
   formatCurrency(amt: BigNumber, decimals: number): string;
+  /** Format an address into a canonical representation */
   formatAddress(acc: ReachAccount | string): string;
+  /** Attempt to extract mnemonic from `acc` if it is exposed. */
   unsafeGetMnemonic(acc: ReachAccount): string;
   /** 
    * @version 0.1.10
