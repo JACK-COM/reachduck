@@ -117,7 +117,7 @@ export function loadReachWithOpts(
     ...(opts.providerEnv || {})
   };
   const stdlibOpts: any = { REACH_CONNECTOR_MODE };
-  if (opts.showReachContractWarnings === true) {
+  if (!opts.showReachContractWarnings) {
     stdlibOpts.REACH_NO_WARN = "Y";
   }
   reach = loadStdlibFn(stdlibOpts);
