@@ -13,6 +13,7 @@
   - [`parseCurrency`](#parsecurrency)
   - [`tokenMetadata`](#tokenmetadata)
   - [`optInToAsset`](#optintoasset)
+  - [Multiple stdlib instances](#multiple-stdlib-instances)
 - [Session management](#session-management)
   - [`checkSessionExists`](#checksessionexists)
   - [`connectUser`](#connectuser)
@@ -77,9 +78,11 @@ This is the a preferred way to load `stdlib` if you are not in a browser or `win
 function loadReach(
     loadStdlibFn: (args: any) => ReachStdLib,
     chain?: string,
-    network?: "TestNet" | "MainNet"
+    network?: "TestNet" | "MainNet",
+    uniqueInstance = false
 ): boolean;
 ```
+Pass `true` as the last argument to get a unique stdlib instance. 
 
 [top](#stdlib-helpers)
 
@@ -169,6 +172,33 @@ Opt-in in to assets
 function optInToAsset(acc: T.ReachAccount, tokenId: any): Promise<boolean>;
 ```
 
+[top](#stdlib-helpers)
+
+---
+
+## Multiple stdlib instances
+`reachduck` now supports multiple stdlib instances. 
+```typescript
+const ethLib = loadReach(loadStdlib, "ETH", "TestNet", true)
+const otherLib = loadReach(loadStdlib, "ALGO", "TestNet", true)
+```
+
+You can also use `loadReachWithOpts`:
+```typescript
+const mainLib = loadReach(loadStdlib, "ALGO", "TestNet")
+const ethLib = loadReachWithOpts(loadStdlib, {
+  chain: "ETH", 
+  network: "TestNet", 
+  uniqueInstance: true
+})
+```
+
+**Note:** You will still need a global reference if you want to use `reachduck`'s helpers.\
+You can use `attachReach` or use `loadReach` again for this:
+```typescript
+const mainLib = attachReach(otherLib); 
+// OR mainLib = loadReach(loadStdlib, ... )
+```
 [top](#stdlib-helpers)
 
 ---
