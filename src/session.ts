@@ -1,7 +1,8 @@
 import { ReachAccount } from "./types";
-import { createReachAPI, formatCurrency } from "./reachlib-api";
+import { formatCurrency } from "./reachlib-api";
 import { createConnectorAPI, NETWORKS } from "./networks/index.networks";
 import { getStorage, isBrowser } from "./utils/helpers";
+import { createReachAPI } from "./reachlib-core";
 
 export type ConnectUserOpts = {
   fetchAssets?: boolean;
