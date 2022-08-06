@@ -4,21 +4,20 @@ Front-end helper functions for your DApp.\
 Can optionally be paired with (unaffiliated) [reach `stdlib`](https://www.npmjs.com/package/@reach-sh/stdlib) for more functionality (see below).
 
 ## CAVEAT EMPTOR
-### 1. This library is *extremely* in Alpha-status. 
-It was hacked together as a convenience, and the documentation is a courtesy. The API may change without warning. Proceed only if you know exactly what you are doing. 
+### 1. This library is in development. 
+It has not yet appeared in production (as far as I know), and the documentation may rarely lag behind changes. The API is mostly stable, but may need to adapt as `stdlib` is updated. Proceed with caution. 
 
-### 2. You *may* need `@reach-sh/stdlib`
-This package works without reach. If you need the latter, you will need to separately [install it](https://www.npmjs.com/package/@reach-sh/stdlib) in your project, and provide it to this package when necessary, and as described below. 
+### 2. You *may* need `@reach-sh/stdlib` for some things
+If you want to use features like user session management (connecting a wallet), you will need to separately [install `@reach-sh/stdlib`](https://www.npmjs.com/package/@reach-sh/stdlib) in your project, and provide it to this package when necessary. You will only need to initialize `stdlib` once with `reachduck`.
 
 
-### 4. The most exemplary efforts have been put forth. 
-Regardless, *expect* errors. And silence (or delayed responses), when you report them.
+### 3. The most exemplary efforts have been put forth. 
+Regardless, there *may be* errors. And silence (or delayed responses), when you report them.
 
 
 ## Breaking Change Notes
 > Version `0.2.0` drops support for `WalletConnect` and `MyAlgo` wrappers.\
-> This removes both `useWebWallet()` and `useWalletConnect()` functionality. 
-> Please continue to rely on `stdlib` as shown in their documentation.
+> This removes both `useWebWallet()` and `useWalletConnect()` exports from the `reachduck` library. Please continue to rely on `stdlib` as shown in their documentation.
 
 ---
 ## Documentation
@@ -84,10 +83,35 @@ type NetworkInterface {
  * the `stdlib` instance. You only need to use this once. 
  */
 function loadReach(
-    loadStdlibFn: (args: any) => ReachStdLib,
+    loadStdlibFn: ((args: any) => ReachStdLib),
     chain?: string,
     network?: "TestNet" | "MainNet"
 ): ReachStdLib;
+
+/** 
+ * Initialize your `stdlib` instance with additional options 
+ * like a wallet fallback. Can use in place of `loadReach`
+ */
+function loadReachWithOpts(
+  loadStdlibFn: LoadStdlibFn,
+  opts: {
+    chain?: ChainSymbol & string; 
+    network?: "TestNet" | "MainNet";
+    providerEnv?: any;
+    showReachContractWarnings?: boolean;
+    uniqueInstance?: boolean;
+    walletFallback?: {
+        MyAlgoConnect?: any;
+        WalletConnect?: any;
+        PeraConnect?: any;
+    };
+    }
+): ReachStdLib;
+
+/** Attach an existing `stdlib` instance to `reachduck`. Use 
+ * when you have already called `loadStdlib` but want to use
+ * helper functions from reachduck  */
+function attachReach(instance: ReachStdLib): ReachStdLib;
 
 /* Returns your configured `stdlib` instance. Ensure you have called `loadReach( loadStdlib )` at least once before using this function. */
 function createReachAPI(): ReachStdLib;
