@@ -39,9 +39,9 @@ export async function optInToAsset(acc: T.ReachAccount, tokenId: any) {
 }
 
 /**
- * Parses a contract address for Algorand or other chains
+ * Create a user-friendly address from an encoded value.
  * @param ctc string|number contract address
- * @returns {string|number} contract address
+ * @returns {string|number} `number` on Algorand; otherwise `string`
  */
 export function parseAddress(ctc: any): string | number {
   const { isBigNumber, bigNumberToNumber } = createReachAPI();
@@ -105,11 +105,7 @@ export async function withTimeout<T>(
 /**
  * @internal
  * Format token metadata from `tokenMetadata` API request */
-export function formatReachToken(
-  tokenId: any,
-  amount: any,
-  data: any
-): T.ReachToken {
+function formatReachToken(tokenId: any, amount: any, data: any): T.ReachToken {
   const id = parseAddress(tokenId);
   const fallbackName = `Asset #${id}`;
   const symbol = data.symbol ? trimByteString(data.symbol) : `#${id}`;
@@ -130,7 +126,7 @@ export function formatReachToken(
  * @internal
  * @param decimals
  */
-export function parseNetworkDecimals(decimals?: number) {
+function parseNetworkDecimals(decimals?: number) {
   if (decimals === undefined || decimals === null) {
     const key = getBlockchain();
     return NETWORKS[key].decimals || 0;
