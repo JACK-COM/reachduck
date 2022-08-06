@@ -1,58 +1,34 @@
 import * as T from "./types";
 import { createConnectorAPI, NETWORKS } from "./networks/index.networks";
 import { trimByteString, formatNumberShort } from "./utils/helpers";
-import {
-  getBlockchain,
-  getBlockchainNetwork,
-  selectBlockchain,
-  selectBlockchainNetwork,
-  validateProvider
-} from "./storage";
-
-type LoadStdlibFn = { (args: any): any };
-
-/** @internal Error message for uninstantiated `stdlib` */
-const UNINSTANTIATED = `
-QUACK! ReachStdlib is not instantiated. See "@jackcom/reachduck" docs for info.
-`;
-/** @internal `StdLib` instance */
-let reach: T.ReachStdLib;
+import { getBlockchain } from "./storage";
+import { createReachAPI } from "./reachlib-core";
 
 /**
- * @reach_helper
- * Global default reach object */
-export function createReachAPI() {
-  if (!reach) throw new Error(UNINSTANTIATED);
-  return reach;
-}
-
-/**
- * @reach_helper
- * Check if an account has opted in to a token. Probably `noOp` outside Algorand */
+ * @reach_helper Check if an account has opted in to a token. Probably `noOp` outside Algorand */
 export async function checkHasToken(acc: T.ReachAccount, token: any) {
   return (await acc.tokenAccepted(token)) || Promise.resolve(false);
 }
 
 /**
- * @reach_helper
- * Format address for `networkAccount` instance */
+ * @reach_helper Format address for `networkAccount` instance */
 export function formatAddress(acc: T.ReachAccount | string) {
   return createReachAPI().formatAddress(acc);
 }
 
 /**
- * @reach_helper
- * Optionally-abbreviated currency formatter (e.g. `fn(1000)` -> `1000` || `1K` ). Expects `amt` to be in atomic unit for network */
+ * @reach_helper Optionally-abbreviated currency formatter (e.g. `fn(1000)` -> `1000` || `1K` ). Expects `amt` to be in atomic unit for network */
 export function formatCurrency(amt: any, decs?: number, abbr = false): string {
   const { formatWithDecimals } = createReachAPI();
-  const decimals = parseNetworkDecimals(Number(decs));
+  const decimals = parseNetworkDecimals(
+    Number(decs || NETWORKS[getBlockchain()].decimals)
+  );
   const reachFmt = formatWithDecimals(amt, decimals);
   return abbr ? formatNumberShort(reachFmt) : reachFmt;
 }
 
 /**
- * @reach_helper
- * Optionally opt-in in to assets */
+ * @reach_helper Optionally opt-in in to assets */
 export async function optInToAsset(acc: T.ReachAccount, tokenId: any) {
   if (await acc.tokenAccepted(tokenId)) return Promise.resolve(true);
 
@@ -63,133 +39,27 @@ export async function optInToAsset(acc: T.ReachAccount, tokenId: any) {
 }
 
 /**
- * @reach_helper
- * Initialize the stdlib instance. Note: If you want to use
- * a wallet fallback (any browser or other client wallet), use `loadReachWithOpts`
- * insrtead
+ * Create a user-friendly address from an encoded value.
+ * @param ctc string|number contract address
+ * @returns {string|number} `number` on Algorand; otherwise `string`
  */
-export function loadReach(
-  loadStdlibFn: LoadStdlibFn,
-  chain: T.ChainSymbol = getBlockchain(),
-  network: T.NetworkProvider = getBlockchainNetwork()
-) {
-  if (reach?.connector) return reach;
-
-  // Instantiate Reach object
-  void reachEnvironment(chain, network);
-  if (isDevnetProvider(network)) {
-    reach = loadStdlibFn(network);
-  } else {
-    reach = loadStdlibFn(chain);
-    if (chain === "ALGO") reach.setProviderByName(network);
-  }
-
-  return reach;
-}
-
-/**
- * @reach_helper
- *
- * @reach_helper
- * Initialize the stdlib instance with an environment override and
- * (optional) wallet fallback.
- */
-export function loadReachWithOpts(
-  loadStdlibFn: LoadStdlibFn,
-  opts: ReachEnvOpts
-) {
-  if (reach?.connector) return reach;
-
-  // Instantiate Reach object
-  const { chain = "ALGO", network = "TestNet" } = opts;
-  const REACH_CONNECTOR_MODE = chain || getBlockchain();
-  // Override `stdlib` load style if devnet provider
-  if (isDevnetProvider(network)) return loadReach(loadStdlibFn, chain, network);
-  if (
-    typeof opts.providerEnv === "string" &&
-    isDevnetProvider(opts.providerEnv)
-  ) {
-    return loadReach(loadStdlibFn, chain, opts.providerEnv as any);
-  }
-
-  const providerEnv = {
-    ...reachEnvironment(REACH_CONNECTOR_MODE, network),
-    ...(opts.providerEnv || {})
-  };
-  const stdlibOpts: any = { REACH_CONNECTOR_MODE };
-  if (!opts.showReachContractWarnings) {
-    stdlibOpts.REACH_NO_WARN = "Y";
-  }
-  reach = loadStdlibFn(stdlibOpts);
-  if (opts.walletFallback) {
-    reach.setWalletFallback(
-      reach.walletFallback({
-        ...opts.walletFallback,
-        providerEnv
-      })
-    );
-  } else if (Object.keys(providerEnv).length) {
-    reach.setProviderByEnv(providerEnv);
-  }
-
-  return reach;
-}
-
-/**
- * @internal
- * Store environment variables for `stdlib` instance, and create
- * a `connectorAPI` for talking to the selected blockchain
- */
-function reachEnvironment(
-  chain: T.ChainSymbol & string,
-  network: T.NetworkProvider & string,
-  providerEnv?: any
-) {
-  void selectBlockchain(chain);
-  void selectBlockchainNetwork(network);
-
-  if (providerEnv) return providerEnv;
-
-  const connector = createConnectorAPI(chain);
-  return connector.getProviderEnv(network);
-}
-
-export type ReachEnvOpts = {
-  chain?: T.ChainSymbol & string;
-  network?: T.NetworkProvider & string;
-  providerEnv?: any;
-  showReachContractWarnings?: boolean;
-  walletFallback?: {
-    MyAlgoConnect?: any;
-    WalletConnect?: any;
-  };
-};
-
-/**
- * Parses a contract address for Algorand or other chains
- * @param {string|number} addr string|number contract address
- * @returns string|number contract address
- */
-export function parseAddress(ctc: any) {
+export function parseAddress(ctc: any): string | number {
   const { isBigNumber, bigNumberToNumber } = createReachAPI();
   const addr = isBigNumber(ctc) ? bigNumberToNumber(ctc) : ctc;
-  if (reach.connector === "ALGO") return parseInt(addr);
+  if (getBlockchain() === "ALGO") return parseInt(addr);
 
   const pit = addr.toString().trim().replace(/\0.*$/g, "");
   return pit.startsWith("0x") ? pit : `0x${pit}`;
 }
 
-/**
- * @reach_helper
- * Convert `val` to atomic units for the current network */
+/** @reach_helper Convert `val` to atomic units for the current network */
 export function parseCurrency(val: any, dec?: number) {
   const decimals = parseNetworkDecimals(Number(dec));
   return createReachAPI().parseCurrency(val, decimals);
 }
 
 /**
- * @reach_helper
- * Get token data and `acc`'s balance of token (if available) */
+ * @reach_helper Get token data and `acc`'s balance of token (if available) */
 export async function tokenMetadata(
   tokenId: any,
   acc: T.ReachAccount
@@ -233,16 +103,6 @@ export async function withTimeout<T>(
 }
 
 /**
- * Assert that `prov` represents a DevNet provider. If true,
- * `prov` will be the only argument used to load `stdlib`
- * @param prov Network provider value to check
- */
-export function isDevnetProvider(prov: string) {
-  const devnets = /(-browser|-live|-devnet)$/;
-  return validateProvider(prov) && devnets.test(prov);
-}
-
-/**
  * @internal
  * Format token metadata from `tokenMetadata` API request */
 function formatReachToken(tokenId: any, amount: any, data: any): T.ReachToken {
@@ -267,6 +127,10 @@ function formatReachToken(tokenId: any, amount: any, data: any): T.ReachToken {
  * @param decimals
  */
 function parseNetworkDecimals(decimals?: number) {
-  const key = createReachAPI().connector as T.ChainSymbol;
-  return isNaN(Number(decimals)) ? NETWORKS[key].decimals || 0 : decimals;
+  if (decimals === undefined || decimals === null) {
+    const key = getBlockchain();
+    return NETWORKS[key].decimals || 0;
+  }
+
+  return decimals;
 }

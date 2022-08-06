@@ -22,7 +22,7 @@
     "build": "npm run clean && tsc",
     "build:dev": "npm run clean && webpack --mode development",
     "preview": "npm run build && npm pack && rm -rf *.tgz",
-    "test": "jest --watchAll",
+    "test": "jest --watchAll --detectOpenHandles",
     "prepublish": "tsc"
   },
   "publishConfig": {
@@ -36,7 +36,8 @@
     "@babel/core": "^7.17.0",
     "@babel/preset-env": "^7.16.11",
     "@babel/preset-typescript": "^7.16.7",
-    "@reach-sh/stdlib": "^0.1.11-rc.3",
+    "@reach-sh/stdlib": "^0.1.11-rc.6",
+    "@types/await-timeout": "^0.3.1",
     "@types/jest": "^27.4.0",
     "algosdk": "^1.16.0",
     "babel-jest": "^27.5.0",
