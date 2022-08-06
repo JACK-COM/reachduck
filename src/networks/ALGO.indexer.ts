@@ -167,12 +167,12 @@ function fallbackAcct(e: any) {
 }
 
 /**
- * Create a `ReachToken` object from asset metadata
+ * @internal Create a `ReachToken` object from asset metadata
  * @param asset Asset data
  * @param amount User balance of asset (if available). Defaults to `0`
  * @returns List of assets roughly matching name
  */
-function formatAssetMetadata(
+export function formatAssetMetadata(
   asset: TokenRaw = { index: -1, params: {} },
   amount: number = 0
 ): ReachToken {

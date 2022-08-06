@@ -1,5 +1,5 @@
 import { ReachAccount } from "./types";
-import { createReachAPI } from "./reachlib-api";
+import { createReachAPI, formatCurrency } from "./reachlib-api";
 import { createConnectorAPI, NETWORKS } from "./networks/index.networks";
 import { getStorage, isBrowser } from "./utils/helpers";
 
@@ -36,7 +36,7 @@ export function checkSessionExists(): {
   const storage = getStorage();
   const [wc, myalgo]: any[] = [
     storage.getItem("walletconnect"),
-    storage.getItem("user"),
+    storage.getItem("user")
   ];
 
   if (Array.isArray(wc?.accounts)) addr = wc.accounts[0];
@@ -45,7 +45,7 @@ export function checkSessionExists(): {
   return {
     exists: [myalgo, wc].some((val) => Boolean(val)),
     isWCSession: Boolean(wc),
-    addr,
+    addr
   };
 }
 
@@ -87,13 +87,8 @@ async function hydrateUser(
   const chain = createConnectorAPI();
   const address = stdlib.formatAddress(account);
   const [bigBal, assetUpdates] = await Promise.all([
-    fetchBalance
-      ? stdlib.formatWithDecimals(
-          await stdlib.balanceOf(account),
-          NETWORKS[chain.chain].decimals
-        )
-      : 0,
-    fetchAssets ? chain.loadAssets(address, initialAssetsLimit) : [],
+    fetchBalance ? formatCurrency(await stdlib.balanceOf(account)) : 0,
+    fetchAssets ? chain.loadAssets(address, initialAssetsLimit) : []
   ]);
 
   persistUser(address);
@@ -103,7 +98,7 @@ async function hydrateUser(
     account,
     address,
     balance: bigBal,
-    ...assetUpdates,
+    ...assetUpdates
   };
 }
 
