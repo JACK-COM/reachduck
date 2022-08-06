@@ -2,6 +2,8 @@
 🦆 Utility functions for working with `stdlib`.
 
 - [Stdlib Helpers](#stdlib-helpers)
+  - [`attachReach`](#attachreach)
+    - [Example](#example)
   - [`loadReach`](#loadreach)
   - [`loadReachWithOpts`](#loadreachwithopts)
     - [Parameters](#parameters)
@@ -32,6 +34,41 @@
 [top](#stdlib-helpers)
 
 ---
+
+## `attachReach`
+Useful when you want *even MOAR* control over how you create an `stdlib` instance.\
+You can instantiate reach with `loadStdlib`, and supply the result to this function. This allows you to still use `reachduck` helpers. 
+
+### Example 
+This will throw an error because it requires stdlib,  which hasn't been instantiated internally:
+```typescript
+import { formatAddress } from '@jackcom/reachduck'
+import { loadStdlib } from '@reach-sh/stdlib'
+
+const stdlib = loadStdlib("ALGO");
+stdlib.setProviderByEnv(process.env);
+const acc = await stdlib.createAccount();
+const addr = formatAddress( someAddress ); // error: QUACK!
+```
+
+To fix it, pass in your stdlib instance:
+```typescript
+import { formatAddress, attachReach } from '@jackcom/reachduck'
+
+const stdlib = loadStdlib("ALGO");
+stdlib.setProviderByEnv(process.env);
+
+// Supply your instance ref to reachduck
+attachReach(stdlib);
+
+const acc = await stdlib.createAccount();
+const addr = formatAddress( someAddress ); // this works fine
+```
+
+[top](#stdlib-helpers)
+
+---
+
 
 ## `loadReach`
 Initialize your `stdlib` instance. Call this when you would use `loadStdlib`. You only need to use this once.\
