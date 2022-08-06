@@ -85,7 +85,7 @@ export type NetworkData = {
   name: string;
   abbr: ChainSymbol;
   active?: boolean;
-  decimals?: number;
+  decimals: number;
 };
 
 // "CFX"

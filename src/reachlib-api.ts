@@ -54,7 +54,11 @@ export function parseAddress(ctc: any): string | number {
 
 /** @reach_helper Convert `val` to atomic units for the current network */
 export function parseCurrency(val: any, dec?: number) {
-  const decimals = parseNetworkDecimals(Number(dec));
+  const safeDec =
+    dec === undefined || dec === null
+      ? NETWORKS[getBlockchain()].decimals
+      : dec;
+  const decimals = parseNetworkDecimals(Number(safeDec));
   return createReachAPI().parseCurrency(val, decimals);
 }
 
