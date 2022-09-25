@@ -1,6 +1,6 @@
 {
   "name": "@jackcom/reachduck",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "description": "A front-end helper for your DApp.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
