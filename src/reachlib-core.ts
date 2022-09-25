@@ -22,6 +22,8 @@ export type ReachEnvOpts = {
   showReachContractWarnings?: boolean;
   /** When true, returns uniquely-configured `stdlib` (separate from global `reach`) */
   uniqueInstance?: boolean;
+  /** When supplied, this unique `stdlib` instance will be saved to memory alongside others */
+  instanceKey?: string;
   /** Optional wallet fallback options */
   walletFallback?: {
     /** Randlabs `MyAlgoConnect` export  */
@@ -35,6 +37,7 @@ export type ReachEnvOpts = {
 
 /** @internal `StdLib` instance */
 export let reach: ReachStdLib;
+export let stdlibMap: Map<string, ReachStdLib> = new Map();
 
 /** @internal Error message for uninstantiated `stdlib` */
 const UNINSTANTIATED = `
@@ -44,18 +47,28 @@ QUACK! ReachStdlib is not instantiated. See "@jackcom/reachduck" docs for info.
 let multiStdlibEnabled = false;
 
 /** Global default reach object */
-export function createReachAPI() {
-  if (!reach) throw new Error(UNINSTANTIATED);
-  return reach;
+export function createReachAPI(key?: string) {
+  if (key) {
+    const instance = stdlibMap.get(key)
+    if (instance) return instance
+    const msg = UNINSTANTIATED.replace(`ReachStdLib`, `ReachStdLib-${key}`)
+    throw new Error(msg)
+  }
+
+  if (reach) return reach;
+
+  throw new Error(UNINSTANTIATED);
 }
 
 /**
  * Use an existing reach instance from your project. Helpful if you want to
  * control how you load the library while taking advantage of `reachduck`'s
- * helper functions
+ * helper functions. You can optionally store this instance for use later (e.g. 
+ * if it uses a different version of `stdlib` than the rest of your project)
  */
-export function attachReach(instance: ReachStdLib | any) {
-  reach = instance;
+export function attachReach(instance: ReachStdLib | any, key?: string) {
+  if (key) stdlibMap.set(key, instance);
+  else reach = instance;
   return instance;
 }
 
@@ -133,7 +146,11 @@ export function loadReachWithOpts(
     instance.setProviderByEnv(providerEnv);
   }
 
-  if (opts.uniqueInstance) return instance;
+  if (opts.uniqueInstance) {
+     return opts.instanceKey
+       ? attachReach(instance, opts.instanceKey)
+       : instance;
+  }
 
   reach = instance;
   return reach;

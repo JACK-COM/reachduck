@@ -188,20 +188,20 @@ export function trimByteString(str: string = ""): string {
   return str.replace(/\0/g, "");
 }
 
-/**
- * Shortens string to `XXXX...XXXX`, with `XXX` padding determined by optional `pad` parameter
- */
+/** Shortens string to `XXXX...XXXX`; padding determined by optional `pad` parameter */
 export function truncateString(str: string, pad = 6): string {
   const { length } = str;
   const start = str.substring(0, pad);
   return `${start}...${str.substring(length - pad, length)}`;
 }
 
-function trimDecimals(val: string) {
+/** Helper: trim decimals from numeric string */
+export function trimDecimals(val: string) {
   if (val.replace(/0*/, "") === "") return "";
   return `.${trimTrailingZeros(val)}`;
 }
 
-function trimTrailingZeros(val: string) {
+/** Helper: trim trailing zeros from decimal string */
+export function trimTrailingZeros(val: string) {
   return val.replace(/0*$/, "").replace(/\.$/, "");
 }
