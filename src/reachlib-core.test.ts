@@ -50,4 +50,19 @@ describe("ReachLib tests", () => {
     expect(u.connector).toStrictEqual("ALGO");
     expect(main.connector).toStrictEqual("ETH");
   });
+
+  it("Stores unique stdlib instances", () => {
+    const opts: Lib.ReachEnvOpts = { network: "TestNet", uniqueInstance: true };
+    const algoOpts: Lib.ReachEnvOpts = { ...opts, chain: "ALGO", instanceKey: '0-1-11' };
+    const ethOpts: Lib.ReachEnvOpts = {...opts, chain: "ETH", instanceKey: '0-1-12'}
+    Lib.loadReachWithOpts(loadStdlib, algoOpts);
+    Lib.loadReachWithOpts(loadStdlib, ethOpts);
+
+    const u = Lib.createReachAPI("0-1-11");
+    const main = Lib.createReachAPI("0-1-12");
+
+    expect(u.connector).not.toStrictEqual(main.connector);
+    expect(u.connector).toStrictEqual("ALGO");
+    expect(main.connector).toStrictEqual("ETH");
+  });
 });

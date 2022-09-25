@@ -1,6 +1,6 @@
 import * as T from "./types";
 import { createConnectorAPI, NETWORKS } from "./networks/index.networks";
-import { trimByteString, formatNumberShort } from "./utils/helpers";
+import { trimByteString, formatNumberShort, isNetworkToken } from "./utils/helpers";
 import { getBlockchain } from "./storage";
 import { createReachAPI } from "./reachlib-core";
 
@@ -62,6 +62,21 @@ export function parseCurrency(val: any, dec?: number) {
   return createReachAPI().parseCurrency(val, decimals);
 }
 
+/** @reach_helper Create a "network token" representing the current chain */
+export function makeNetworkToken(chain?: T.ChainSymbol): T.ReachToken {
+  const name = chain || getBlockchain();
+  return {
+    id: "0",
+    name,
+    symbol: name,
+    url: "",
+    decimals: NETWORKS[name].decimals as number,
+    supply: "0",
+    verified: true,
+    verificationTier: "trusted"
+  };
+}
+
 /**
  * @reach_helper Get token data and `acc`'s balance of token (if available) */
 export async function tokenMetadata(
@@ -69,13 +84,16 @@ export async function tokenMetadata(
   acc: T.ReachAccount
 ): Promise<T.ReachToken> {
   const { balanceOf } = createReachAPI();
+  const networkToken = isNetworkToken(tokenId)
+  const onAlgo = getBlockchain() === "ALGO"
   const fetchBalance = () => {
-    return getBlockchain() === "ALGO"
-      ? withTimeout(balanceOf(acc, tokenId))
-      : Promise.resolve(0);
+    const fn = networkToken ? balanceOf(acc) : balanceOf(acc, tokenId)
+    return onAlgo ? withTimeout(fn) : Promise.resolve(0);
   };
   const fetchToken = () => {
-    if (getBlockchain() === "ALGO") {
+    if (networkToken) return makeNetworkToken();
+
+    if (onAlgo) {
       const chain = createConnectorAPI();
       return withTimeout(chain.fetchAssetById(tokenId), null);
     }

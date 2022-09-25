@@ -118,6 +118,7 @@ export type ReachToken = {
   symbol: string | ChainSymbol;
   url: string;
   verified?: boolean;
+  verificationTier?: "trusted" | "verified" | "suspicious" | "unverified";
 };
 
 /** A reach-connected Network Account representation */
