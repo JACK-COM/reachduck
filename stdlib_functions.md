@@ -59,13 +59,24 @@ import { formatAddress, attachReach } from '@jackcom/reachduck'
 const stdlib = loadStdlib("ALGO");
 stdlib.setProviderByEnv(process.env);
 
-// Supply your instance ref to reachduck
+// Supply your instance ref to reachduck so you can access it with 'createReachAPI'
 attachReach(stdlib);
 
 const acc = await stdlib.createAccount();
 const addr = formatAddress( someAddress ); // this works fine
+
+// in another file: 
+const otherFileStdlib = createReachAPI(); // returns 'stdlib' above
 ```
 
+**Optional:** if you are doing multi-chain stuff, you can supply a key, which can be used to
+retrieve the instance via `createReachAPI`:
+```typescript
+attachReach(stdlib, 'algo');
+
+// later:
+const algoStdlib = createReachAPI('algo');
+```
 [top](#stdlib-helpers)
 
 ---
@@ -183,14 +194,38 @@ const ethLib = loadReach(loadStdlib, "ETH", "TestNet", true)
 const otherLib = loadReach(loadStdlib, "ALGO", "TestNet", true)
 ```
 
-You can also use `loadReachWithOpts`:
+This is preferred if you want to use the instances once, or plan to track them yourself.\
+If you want to re-use multiple instances with `createReachAPI`, use `loadReachWithOpts` with an `instanceKey`:
 ```typescript
-const mainLib = loadReach(loadStdlib, "ALGO", "TestNet")
-const ethLib = loadReachWithOpts(loadStdlib, {
+
+
+// Default library
+loadReach(loadStdlib, "ALGO", "TestNet")
+
+// Example: store-it-yourself library. This cannot be retrieved via `createReachAPI`
+// so we immediately store the return-value from `loadReach`.
+const oneTimeLib = loadReach(loadStdlib, "ALGO", "TestNet", true)
+
+// Create and store a second Algorand stdlib instance using a newer version of stdlib.
+// [See the Examples page for a note on installing multiple reach versions locally]
+loadReachWithOpts(loadStdlib2,  {
+  chain: "ALGO", 
+  network: "TestNet", 
+  uniqueInstance: true,
+  instanceKey: 'algoLatest'
+})
+
+// Create an stdlib version configured for Ethereum
+loadReachWithOpts(loadStdlib, {
   chain: "ETH", 
   network: "TestNet", 
-  uniqueInstance: true
+  uniqueInstance: true,
+  instanceKey: 'ethLib'
 })
+
+const algoLatestLib = createReachAPI('algoLatest')
+const ethLib = createReachAPI('ethLib')
+const mainLib = createReachAPI()
 ```
 
 **Note:** You will still need a global reference if you want to use `reachduck`'s helpers.\
