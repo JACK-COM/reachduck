@@ -1,18 +1,12 @@
 # reachduck 🦆
 
-Front-end helper functions for your DApp.\
-Can optionally be paired with (unaffiliated) [reach `stdlib`](https://www.npmjs.com/package/@reach-sh/stdlib) for more functionality (see below).
+Front-end helper functions for your DApp. Currently supports Ethereum (limited) and Algorand.\
+Can optionally be paired with (unaffiliated) [reach `stdlib`](https://www.npmjs.com/package/@reach-sh/stdlib) for more functionality.
 
-## CAVEAT EMPTOR
-### 1. This library is in development. 
-It has not yet appeared in production (as far as I know), and the documentation may rarely lag behind changes. The API is mostly stable, but may need to adapt as `stdlib` is updated. Proceed with caution. 
+A [changelog](https://github.com/JACK-COM/reachduck/blob/main/CHANGELOG.md) was introduced in `0.4.3`, and *should* better cover any interesting or disruptive changes made to the library.
 
-### 2. You *may* need `@reach-sh/stdlib` for some things
-If you want to use features like user session management (connecting a wallet), you will need to separately [install `@reach-sh/stdlib`](https://www.npmjs.com/package/@reach-sh/stdlib) in your project, and provide it to this package when necessary. You will only need to initialize `stdlib` once with `reachduck`.
-
-
-### 3. The most exemplary efforts have been put forth. 
-Regardless, there *may be* errors. And silence (or delayed responses), when you report them.
+### You *may* need `@reach-sh/stdlib` for some things
+> If you want to use features like user session management (connecting a wallet), you will need to separately [install `@reach-sh/stdlib`](https://www.npmjs.com/package/@reach-sh/stdlib) in your project, and provide it to this package when necessary. `@jackcom/reachduck@^0.4.5` allows you to instantiate and use multiple `stdlib` instances. 
 
 
 ## Breaking Change Notes
@@ -100,6 +94,7 @@ function loadReachWithOpts(
     providerEnv?: any;
     showReachContractWarnings?: boolean;
     uniqueInstance?: boolean;
+    instanceKey?: string;
     walletFallback?: {
         MyAlgoConnect?: any;
         WalletConnect?: any;
@@ -108,16 +103,17 @@ function loadReachWithOpts(
     }
 ): ReachStdLib;
 
-/** Attach an existing `stdlib` instance to `reachduck`. Use 
- * when you have already called `loadStdlib` but want to use
- * helper functions from reachduck  */
-function attachReach(instance: ReachStdLib): ReachStdLib;
+/** 
+ * Attach an existing `stdlib` instance to `reachduck`. Use when you have 
+ * already called `loadStdlib` but want reachduck helper functions. 
+ * Add a `key` to attach and re-use multiple `stdlib` instances */
+function attachReach(instance: ReachStdLib, key?: string): ReachStdLib;
 
-/* Returns your configured `stdlib` instance. Ensure you have called `loadReach( loadStdlib )` at least once before using this function. */
-function createReachAPI(): ReachStdLib;
-
-/* Accept a token (or skip if already accepted) and return a boolean */
-function inlineAssetOptIn(acc: ReachAccount, tokenId: any): Promise<boolean>;
+/**
+ * Returns your configured `stdlib` instance. Supply a `key` if you are 
+ * using multiple instances. Throws an error if no instance is found.
+ */
+function createReachAPI(key?: string): ReachStdLib;
 
 /* 
 * Convert a string into a chain-specific contract representation. Will attempt 
@@ -139,7 +135,8 @@ function optInToAsset(acc: T.ReachAccount, tokenId: any): Promise<boolean>;
 ```
 
 ### Session Management
-**Note:** Session management depends on an `stdlib` instance. Make sure you have a version of the Reach JS standard library no older than `0.1.8-rc.3`.
+**Note:** Session management depends on an `stdlib` instance. Make sure your standard library 
+is at least `0.1.8-rc.3` or newer.
 ```typescript
 /** 
  * Check if a previous user session (address or WalletConnect) exists.
@@ -204,6 +201,12 @@ function isVideoFile(path: string): boolean;
 
 /* List all networks currently supported by this library */
 function listSupportedNetworks(): NetworkData[];
+
+/** 
+ * Create a "dummy" Token object for the specified network. If `chain` is not
+ * specified, it will fallback to the current `reachduck` global configuration.
+ */
+function makeNetworkToken(chain?: ChainSymbol): ReachToken;
 
 /* Doesn't do anything */
 function noOp(): null;
