@@ -5,6 +5,30 @@ All notable changes to `reachduck` will be documented here.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
  
+## [0.4.6] - 2022-09-25
+ 
+### Added
+- Store and re-use multiple **stdlib** instances by supplying a key
+- New utility functions 
+ - `makeNetworkToken`
+ - `trimDecimals`
+ - `trimTrailingZeros`
+
+### Fixed
+- `algosdk` dependency locked to `1.18.0`
+
+
+ 
+## [0.4.5] - 2022-08-07
+ 
+### Added
+- Enabled multiple **stdlib** instances
+
+### Fixed
+- `algosdk` dependency locked to `1.18.0`
+
+
+ 
 ## [0.4.3] - 2022-08-06
  
 ### Added
