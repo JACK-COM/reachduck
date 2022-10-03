@@ -344,4 +344,5 @@ export type TxnSearchOpts = {
   note?: string;
   afterDate?: string;
   beforeDate?: string;
+  nextToken?: string;
 };
