@@ -337,6 +337,7 @@ export type Maybe<T> = ["Some", T] | ["None", null];
 
 export type TxnSearchOpts = {
   address?: string;
+  addressRole?: string & ("sender" | "receiver" | "freeze-target");
   amount?: number;
   minRound?: number;
   maxRound?: number;

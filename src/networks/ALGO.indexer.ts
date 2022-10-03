@@ -135,13 +135,15 @@ export async function searchForTransactions(
       minRound,
       note,
       afterDate,
-      beforeDate
+      beforeDate,
+      addressRole
     } = opts;
 
     if (addr) searchQuery = searchQuery.address(addr);
     if (minRound) searchQuery = searchQuery.minRound(Math.max(minRound, 0));
     if (afterDate) searchQuery = searchQuery.afterTime(afterDate);
     if (beforeDate) searchQuery = searchQuery.beforeTime(beforeDate);
+    if (addressRole) searchQuery = searchQuery.addressRole(addressRole);
     if (amount) {
       searchQuery = searchQuery
         .currencyGreaterThan(amount - 1)
