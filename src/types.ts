@@ -334,3 +334,13 @@ export type ReachStdLib =
 
 /** A safe-wrapped value that may or may not exist. */
 export type Maybe<T> = ["Some", T] | ["None", null];
+
+export type TxnSearchOpts = {
+  address?: string;
+  amount?: number;
+  minRound?: number;
+  maxRound?: number;
+  note?: string;
+  afterDate?: string;
+  beforeDate?: string;
+};
