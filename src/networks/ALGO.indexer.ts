@@ -163,7 +163,7 @@ export async function searchForTransactions(
     return results;
   } catch (error) {
     console.log("Search for Txns error:", error);
-    return [];
+    return { transactions: [] };
   }
 }
 
