@@ -1,5 +1,5 @@
 import { Indexer } from "algosdk";
-import { formatCurrency, parseCurrency } from "../reachlib-api";
+import { formatCurrency } from "../reachlib-api";
 import { getBlockchainNetwork } from "../storage";
 import { ReachToken, NetworkProvider, TxnSearchOpts } from "../types";
 import { trimByteString } from "../utils/helpers";
@@ -126,38 +126,38 @@ export async function searchAssetsByName(name: string): Promise<any[]> {
 export async function searchForTransactions(
   opts: TxnSearchOpts = {}
 ): Promise<any> {
+  const Indexer = useIndexerClient();
+  let searchQuery = Indexer.searchForTransactions();
+  const {
+    address: addr,
+    amount,
+    minRound,
+    note,
+    afterDate,
+    beforeDate,
+    addressRole,
+    nextToken
+  } = opts;
+
+  if (addr) {
+    searchQuery = searchQuery.address(addr);
+    if (addressRole) searchQuery = searchQuery.addressRole(addressRole);
+  }
+  if (minRound) searchQuery = searchQuery.minRound(Math.max(minRound, 0));
+  if (afterDate) searchQuery = searchQuery.afterTime(afterDate);
+  if (beforeDate) searchQuery = searchQuery.beforeTime(beforeDate);
+  if (nextToken) searchQuery = searchQuery.nextToken(nextToken);
+  if (amount) {
+    searchQuery = searchQuery
+      .currencyGreaterThan(amount - 1)
+      .currencyLessThan(amount + 1);
+  }
+  if (note) {
+    const noteenc = new TextEncoder().encode(note);
+    searchQuery = searchQuery.notePrefix(noteenc);
+  }
+
   try {
-    const Indexer = useIndexerClient();
-    let searchQuery = Indexer.searchForTransactions();
-    const {
-      address: addr,
-      amount,
-      minRound,
-      note,
-      afterDate,
-      beforeDate,
-      addressRole,
-      nextToken
-    } = opts;
-
-    if (addr) {
-      searchQuery = searchQuery.address(addr);
-      if (addressRole) searchQuery = searchQuery.addressRole(addressRole);
-    }
-    if (minRound) searchQuery = searchQuery.minRound(Math.max(minRound, 0));
-    if (afterDate) searchQuery = searchQuery.afterTime(afterDate);
-    if (beforeDate) searchQuery = searchQuery.beforeTime(beforeDate);
-    if (nextToken) searchQuery = searchQuery.nextToken(nextToken);
-    if (amount) {
-      searchQuery = searchQuery
-        .currencyGreaterThan(amount - 1)
-        .currencyLessThan(amount + 1);
-    }
-    if (note) {
-      const noteenc = new TextEncoder().encode(note);
-      searchQuery = searchQuery.notePrefix(noteenc);
-    }
-
     // Let error fall to "catch"
     const results = await searchQuery.do();
     return results;
@@ -165,12 +165,6 @@ export async function searchForTransactions(
     console.log("Search for Txns error:", error);
     return { transactions: [] };
   }
-}
-
-function fallbackAcct(e: any) {
-  console.warn("Could not fetch ALGO account", e);
-  const emptyAcct = { assets: [], "created-apps": [] };
-  return { account: emptyAcct };
 }
 
 /**
@@ -214,6 +208,12 @@ function assetSymbol(data: any) {
 
 function decodeB64String(st: string) {
   return trimByteString(Buffer.from(st, "base64").toString("utf8"));
+}
+
+function fallbackAcct(e: any) {
+  console.warn("Could not fetch ALGO account", e);
+  const emptyAcct = { assets: [], "created-apps": [] };
+  return { account: emptyAcct };
 }
 
 /** Store initial provider settings */
