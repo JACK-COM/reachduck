@@ -1,15 +1,21 @@
 import { NetworkProvider, selectBlockchainNetwork } from "..";
 import { getBlockchain } from "../storage";
-import { NetworkData, ReachToken, ChainSymbol, NetworksMap } from "../types";
+import {
+  NetworkData,
+  ReachToken,
+  ChainSymbol,
+  NetworksMap,
+  TxnSearchOpts
+} from "../types";
 import ALGO from "./ALGO";
 
 const CHAINS: Record<ChainSymbol, NetworkInterface> = {
   ALGO: makeAPI("ALGO", ALGO),
   ETH: makeAPI("ETH", {
     getProviderEnv() {
-      return {}
-    },
-  }),
+      return {};
+    }
+  })
 };
 
 /** Interface for blockchain-specific helpers */
@@ -26,14 +32,14 @@ export type NetworkInterface = {
   getProviderEnv(provider?: NetworkProvider & string): any;
   /** Fetch account assets from network. May optionally takes a list of assets addresses */
   loadAssets(
-    acc: string | any,
+    account: string | any,
     limit?: number,
     assets?: string[]
   ): any | Promise<ReachToken[]>;
   /** Search for an asset/token by its name. Returns a list of results */
   searchAssetsByName(assetName: string): any;
   /** Search for transactions for this `addr` */
-  searchForTransactions(addr: string, opts?: any): any;
+  searchForTransactions(opts?: TxnSearchOpts): any;
 };
 
 export const NETWORKS: NetworksMap = {

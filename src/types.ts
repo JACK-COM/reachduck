@@ -334,3 +334,39 @@ export type ReachStdLib =
 
 /** A safe-wrapped value that may or may not exist. */
 export type Maybe<T> = ["Some", T] | ["None", null];
+
+export type TxnSearchOpts = {
+  address?: string;
+  addressRole?: string & ("sender" | "receiver" | "freeze-target");
+  amount?: number;
+  minRound?: number;
+  maxRound?: number;
+  note?: string;
+  afterDate?: string;
+  beforeDate?: string;
+  nextToken?: string;
+};
+
+
+type TxnOpts = { provider: NetworkProvider };
+export type AssetFetchOpts = TxnOpts & { balance?: number; limit?: number };
+export type AddAssetOpts = TxnOpts & { assetId: string; address: string };
+export type PaymentOpts = AddAssetOpts & {
+  /** Optional asset to transfer */
+  assetId?: string;
+  /** Asset value decimal places. Required if `assetId` is supplied */
+  assetDecimals?: number;
+  /** Amount to transfer */
+  amount: number;
+  /** Receiver of payment */
+  receiver: string;
+};
+export type PaymentTxn = {
+  to: string;
+  from: string;
+  amount?: number;
+  noteEnc?: Uint8Array;
+  fee?: number;
+  asset?: string;
+  txId?: string;
+};
