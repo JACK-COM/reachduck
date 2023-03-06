@@ -1,8 +1,7 @@
 import { ReachAccount } from "./types";
-import { formatCurrency } from "./reachlib-api";
-import { createConnectorAPI, NETWORKS } from "./networks/index.networks";
-import { getStorage, isBrowser } from "./utils/helpers";
-import { createReachAPI } from "./reachlib-core";
+import { createConnectorAPI } from "./networks/index.networks";
+import { formatAtomicUnits, getStorage, isBrowser } from "./utils/helpers";
+import { createReachAPI } from "./reach/reachlib-core";
 
 export type ConnectUserOpts = {
   fetchAssets?: boolean;
@@ -80,27 +79,22 @@ export type ConnectedUserData = {
 
 /** HELPER | Restart user session */
 async function hydrateUser(
-  account: ReachAccount,
+  acc: ReachAccount,
   opts: ConnectUserOpts
 ): Promise<ConnectedUserData> {
   const { fetchAssets, fetchBalance, initialAssetsLimit = 10 } = opts;
-  const stdlib = createReachAPI();
+  const { balanceOf, formatAddress } = createReachAPI();
   const chain = createConnectorAPI();
-  const address = stdlib.formatAddress(account);
-  const [bigBal, assetUpdates] = await Promise.all([
-    fetchBalance ? formatCurrency(await stdlib.balanceOf(account)) : 0,
+  const address = formatAddress(acc);
+  const [bigBal, assets] = await Promise.all([
+    fetchBalance ? formatAtomicUnits(await balanceOf(acc), chain.decimals) : 0,
     fetchAssets ? chain.loadAssets(address, initialAssetsLimit) : []
   ]);
 
   persistUser(address);
 
   // Notify user
-  return {
-    account,
-    address,
-    balance: bigBal,
-    ...assetUpdates
-  };
+  return { account: acc, address, balance: bigBal, ...assets };
 }
 
 /** HELPER | persist user session details */

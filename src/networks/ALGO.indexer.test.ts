@@ -1,5 +1,5 @@
 import { loadStdlib } from "@reach-sh/stdlib";
-import { loadReach } from "../reachlib-core";
+import { loadReach } from "../reach/reachlib-core";
 import { formatAssetMetadata } from "./ALGO.indexer";
 
 describe("ALGO.indexer suite", () => {

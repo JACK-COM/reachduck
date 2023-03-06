@@ -3,5 +3,5 @@ export * from "./session";
 export * from "./storage";
 export * from "./types";
 export * from "./networks/index.networks";
-export * from "./reachlib-api";
-export * from "./reachlib-core";
+export * from "./reach/reachlib-api";
+export * from "./reach/reachlib-core";

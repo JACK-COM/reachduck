@@ -1,7 +1,7 @@
-import * as T from "./types";
-import { createConnectorAPI, NETWORKS } from "./networks/index.networks";
-import { trimByteString, formatNumberShort, isNetworkToken } from "./utils/helpers";
-import { getBlockchain } from "./storage";
+import * as T from "../types";
+import { createConnectorAPI, NETWORKS } from "../networks/index.networks";
+import { trimByteString, formatNumberShort, isNetworkToken } from "../utils/helpers";
+import { getBlockchain } from "../storage";
 import { createReachAPI } from "./reachlib-core";
 
 /**
