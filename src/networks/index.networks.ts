@@ -1,12 +1,6 @@
 import { NetworkProvider, selectBlockchainNetwork } from "..";
 import { getBlockchain } from "../storage";
-import {
-  NetworkData,
-  ReachToken,
-  ChainSymbol,
-  NetworksMap,
-  TxnSearchOpts
-} from "../types";
+import { NetworkData, ReachToken, ChainSymbol, TxnSearchOpts } from "../types";
 import ALGO from "./ALGO";
 
 const CHAINS: Record<ChainSymbol, NetworkInterface> = {
@@ -20,7 +14,8 @@ const CHAINS: Record<ChainSymbol, NetworkInterface> = {
 
 /** Interface for blockchain-specific helpers */
 export type NetworkInterface = {
-  chain: ChainSymbol & string;
+  /** Create a new network account */
+  createAccount(): any | Promise<any>;
   /** Fetch account details from network */
   fetchAccount(acc: string | any): any | Promise<any>;
   /** Fetch an asset/token by its ID from the chain's block explorer */
@@ -40,11 +35,13 @@ export type NetworkInterface = {
   searchAssetsByName(assetName: string): any;
   /** Search for transactions for this `addr` */
   searchForTransactions(opts?: TxnSearchOpts): any;
-};
+} & NetworkData;
+
+export type NetworksMap = Record<ChainSymbol, NetworkData>;
 
 export const NETWORKS: NetworksMap = {
   ALGO: { name: "Algorand", abbr: "ALGO", decimals: 6 },
-  ETH: { name: "Ethereum", abbr: "ETH", decimals: 18 },
+  ETH: { name: "Ethereum", abbr: "ETH", decimals: 18 }
 };
 
 /** Get a UI-friendly list of supported Networks */
@@ -53,7 +50,7 @@ export function listSupportedNetworks(): NetworkData[] {
 
   return Object.values(NETWORKS).map((val) => ({
     ...val,
-    active: val.abbr === activeNetwork,
+    active: val.abbr === activeNetwork
   }));
 }
 
@@ -79,6 +76,13 @@ export function isSupportedNetwork(key: ChainSymbol) {
   return Boolean(CHAINS[key]);
 }
 
+function getNet(): NetworksMap {
+  return {
+    ALGO: { name: "Algorand", abbr: "ALGO", decimals: 6 },
+    ETH: { name: "Ethereum", abbr: "ETH", decimals: 18 }
+  };
+}
+
 /**
  * Create a default `ConnectorInterface` object that can be overridden
  * with chain-specific functions
@@ -91,18 +95,19 @@ function makeAPI(
   const unImpl = (m: string) => console.log(`Unsupported ${chain} call "${m}"`);
 
   return {
-    chain,
+    ...getNet()[chain],
+    createAccount: () => unImpl("create account"),
     fetchAccount: () => unImpl("fetchAccount"),
     fetchAssetById: async () => {
-      unImpl("fetchAssetById");
+      unImpl("fetch-asset-by-id");
       return null;
     },
     getProviderEnv: () => ({}),
-    loadAssets: () => unImpl("loadAssets"),
+    loadAssets: () => unImpl("load assets"),
     searchAssetsByName: emptyList,
     searchForTransactions: emptyList,
 
     // override with any custom implementation
-    ...overrides,
+    ...overrides
   };
 }

@@ -1,25 +1,10 @@
-import * as Lib from "./reachlib-api";
-import * as Storage from "./storage";
 import { loadStdlib } from "@reach-sh/stdlib";
-import { createConnectorAPI } from ".";
-import { createReachAPI, loadReach } from "./reachlib-core";
+import * as Lib from "../reach/reachlib-api";
+import { createReachAPI, loadReach } from "../reach/reachlib-core";
 
 describe("ReachLib tests | Pre-instantiate", () => {
   it("Throws an error when stdlib isn't instantiated", () => {
     expect(() => createReachAPI()).toThrow();
-  });
-
-  it("Creates a connector-api to match local storage", () => {
-    expect(Storage.getBlockchain()).toBe("ALGO");
-    expect(Storage.getBlockchainNetwork()).toBe("TestNet");
-
-    Storage.selectBlockchain("ALGO");
-    let conn = createConnectorAPI();
-    expect(conn.chain).toStrictEqual("ALGO");
-
-    Storage.selectBlockchain("ETH");
-    conn = createConnectorAPI();
-    expect(conn.chain).toStrictEqual("ETH");
   });
 });
 

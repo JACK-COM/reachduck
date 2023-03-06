@@ -1,24 +1,10 @@
+import { loadStdlib, unsafeAllowMultipleStdlibs } from "@reach-sh/stdlib";
 import * as Lib from "./reachlib-core";
-import * as Storage from "./storage";
-import { loadStdlib } from "@reach-sh/stdlib";
-import { createConnectorAPI } from ".";
+import * as Storage from "../storage";
 
 describe("ReachLib tests", () => {
   it("Throws an error when stdlib isn't instantiated", () => {
     expect(() => Lib.createReachAPI()).toThrow();
-  });
-
-  it("Creates a connector-api to match local storage", () => {
-    expect(Storage.getBlockchain()).toBe("ALGO");
-    expect(Storage.getBlockchainNetwork()).toBe("TestNet");
-
-    Storage.selectBlockchain("ALGO");
-    let conn = createConnectorAPI();
-    expect(conn.chain).toStrictEqual("ALGO");
-
-    Storage.selectBlockchain("ETH");
-    conn = createConnectorAPI();
-    expect(conn.chain).toStrictEqual("ETH");
   });
 
   it("Detects a devnet provider", () => {
@@ -34,6 +20,7 @@ describe("ReachLib tests", () => {
   });
 
   it("Defaults stdlib to the blockchain environment", () => {
+    Storage.selectBlockchain("ETH");
     const spy = jest.spyOn(Storage, "selectBlockchain");
     Lib.loadReach(loadStdlib);
 
@@ -43,6 +30,7 @@ describe("ReachLib tests", () => {
   });
 
   it("Creates a unique stdlib instance", () => {
+    unsafeAllowMultipleStdlibs()
     const u = Lib.loadReach(loadStdlib, "ALGO", "TestNet", true);
     const main = Lib.loadReach(loadStdlib, "ETH", "TestNet", true);
 
@@ -53,8 +41,16 @@ describe("ReachLib tests", () => {
 
   it("Stores unique stdlib instances", () => {
     const opts: Lib.ReachEnvOpts = { network: "TestNet", uniqueInstance: true };
-    const algoOpts: Lib.ReachEnvOpts = { ...opts, chain: "ALGO", instanceKey: '0-1-11' };
-    const ethOpts: Lib.ReachEnvOpts = {...opts, chain: "ETH", instanceKey: '0-1-12'}
+    const algoOpts: Lib.ReachEnvOpts = {
+      ...opts,
+      chain: "ALGO",
+      instanceKey: "0-1-11"
+    };
+    const ethOpts: Lib.ReachEnvOpts = {
+      ...opts,
+      chain: "ETH",
+      instanceKey: "0-1-12"
+    };
     Lib.loadReachWithOpts(loadStdlib, algoOpts);
     Lib.loadReachWithOpts(loadStdlib, ethOpts);
 

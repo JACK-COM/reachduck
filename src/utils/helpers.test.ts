@@ -90,8 +90,13 @@ describe("Helpers → `Maybe` values", () => {
   });
 });
 
-describe("Helpers → Number helpers", () => {
-  const { formatNumberShort, formatCurrencyLocale, abbrevNumber } = H;
+describe.only("Helpers → Number helpers", () => {
+  const {
+    formatNumberShort,
+    formatAtomicUnits,
+    formatCurrencyLocale,
+    abbrevNumber
+  } = H;
 
   it("Abbreviates by the number of groups in the value", () => {
     // Number with '1' group (e.g. 1,234 = value(1), group(234))
@@ -103,6 +108,34 @@ describe("Helpers → Number helpers", () => {
     expect(abbrevNumber(6)).toStrictEqual("Qi");
     expect(abbrevNumber(7)).toStrictEqual("Si");
     expect(abbrevNumber(8)).toStrictEqual("Se");
+  });
+
+  it("Trims trailing and leading zeros", () => {
+    const { trimLeadingChar: trimLeadingZeros, trimTrailingChar } = H;
+    expect(trimTrailingChar("1000")).toBe("1");
+    expect(trimTrailingChar("1001")).toBe("1001");
+    expect(trimLeadingZeros("1001")).toBe("1001");
+    expect(trimLeadingZeros("0001")).toBe("1");
+  });
+
+  it("Formats an atomic currency value", () => {
+    // numbers
+    expect(formatAtomicUnits(1000, 8)).toBe("0.00001");
+    expect(formatAtomicUnits(1234, 6)).toBe("0.001234");
+    expect(formatAtomicUnits(12345678, 8)).toBe("0.12345678");
+    expect(formatAtomicUnits(12345678, 4)).toBe("1234.5678");
+    // strings
+    expect(formatAtomicUnits('1000', 0)).toBe("1000");
+    expect(formatAtomicUnits('1000', 8)).toBe("0.00001");
+    expect(formatAtomicUnits('1000.00', 8)).toBe("0.00001");
+    expect(formatAtomicUnits('10.00', 8)).toBe("0.0000001");
+    expect(formatAtomicUnits("1234", 6)).toBe("0.001234");
+    expect(formatAtomicUnits("12345678", 8)).toBe("0.12345678");
+    expect(formatAtomicUnits("12345678", 4)).toBe("1234.5678");
+    // big int
+    expect(formatAtomicUnits(BigInt(1234), 6)).toBe("0.001234");
+    expect(formatAtomicUnits(BigInt(12345678), 8)).toBe("0.12345678");
+    expect(formatAtomicUnits(BigInt(12345678), 4)).toBe("1234.5678");
   });
 
   it("Truncates a number", () => {

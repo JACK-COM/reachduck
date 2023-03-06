@@ -1,13 +1,12 @@
-import { unsafeAllowMultipleStdlibs } from "@reach-sh/stdlib";
-import { ChainSymbol, NetworkProvider, ReachStdLib } from "./types";
+import { ChainSymbol, NetworkProvider, ReachduckStdLib } from "../types";
 import {
   getBlockchain,
   getBlockchainNetwork,
   selectBlockchain,
   selectBlockchainNetwork,
   validateProvider
-} from "./storage";
-import { createConnectorAPI, NETWORKS } from "./networks/index.networks";
+} from "../storage";
+import { createConnectorAPI } from "../networks/index.networks";
 
 export type LoadStdlibFn = { (args: any): any };
 
@@ -36,8 +35,8 @@ export type ReachEnvOpts = {
 };
 
 /** @internal `StdLib` instance */
-export let reach: ReachStdLib;
-export let stdlibMap: Map<string, ReachStdLib> = new Map();
+export let reach: ReachduckStdLib;
+export let stdlibMap: Map<string, ReachduckStdLib> = new Map();
 
 /** @internal Error message for uninstantiated `stdlib` */
 const UNINSTANTIATED = `
@@ -49,10 +48,10 @@ let multiStdlibEnabled = false;
 /** Global default reach object */
 export function createReachAPI(key?: string) {
   if (key) {
-    const instance = stdlibMap.get(key)
-    if (instance) return instance
-    const msg = UNINSTANTIATED.replace(`ReachStdLib`, `ReachStdLib-${key}`)
-    throw new Error(msg)
+    const instance = stdlibMap.get(key);
+    if (instance) return instance;
+    const msg = UNINSTANTIATED.replace(`ReachStdLib`, `ReachStdLib-${key}`);
+    throw new Error(msg);
   }
 
   if (reach) return reach;
@@ -63,10 +62,10 @@ export function createReachAPI(key?: string) {
 /**
  * Use an existing reach instance from your project. Helpful if you want to
  * control how you load the library while taking advantage of `reachduck`'s
- * helper functions. You can optionally store this instance for use later (e.g. 
+ * helper functions. You can optionally store this instance for use later (e.g.
  * if it uses a different version of `stdlib` than the rest of your project)
  */
-export function attachReach(instance: ReachStdLib | any, key?: string) {
+export function attachReach(instance: ReachduckStdLib | any, key?: string) {
   if (key) stdlibMap.set(key, instance);
   else reach = instance;
   return instance;
@@ -82,13 +81,14 @@ export function loadReach(
   chain: ChainSymbol = getBlockchain(),
   network: NetworkProvider = getBlockchainNetwork(),
   uniqueInstance = false
-) {
-  if (reach?.connector && !uniqueInstance) return reach;
+): ReturnType<typeof loadStdlibFn> & ReachduckStdLib {
+  if (reach?.connector && !uniqueInstance)
+    return reach as ReturnType<typeof loadStdlibFn> & ReachduckStdLib;
   checkMultiStdlib(uniqueInstance);
 
   // Instantiate Reach object
   void reachEnvironment(chain, network);
-  let instance: ReachStdLib;
+  let instance: ReachduckStdLib;
   if (isDevnetProvider(network)) {
     instance = loadStdlibFn(network);
   } else {
@@ -96,21 +96,21 @@ export function loadReach(
     if (chain === "ALGO") instance.setProviderByName(network);
   }
 
-  if (uniqueInstance) return instance;
+  if (uniqueInstance)
+    return instance as ReturnType<typeof loadStdlibFn> & ReachduckStdLib;
 
   reach = instance;
-  return reach;
+  return reach as ReturnType<typeof loadStdlibFn> & ReachduckStdLib;
 }
+
 /**
- * @reach_helper
  * @reach_helper Initialize the stdlib instance with an environment override and
  * (optional) wallet fallback.
  */
-
 export function loadReachWithOpts(
   loadStdlibFn: LoadStdlibFn,
   opts: ReachEnvOpts
-) {
+): ReturnType<typeof loadStdlibFn> & ReachduckStdLib {
   // Exit if reach instantiated and user isn't creating a unique instance
   if (reach?.connector && !opts.uniqueInstance) return reach;
   checkMultiStdlib(opts.uniqueInstance || false);
@@ -134,25 +134,20 @@ export function loadReachWithOpts(
   };
   const stdlibOpts: any = { REACH_CONNECTOR_MODE };
   if (!opts.showReachContractWarnings) stdlibOpts.REACH_NO_WARN = "Y";
-  let instance = loadStdlibFn(stdlibOpts);
+  let lib = loadStdlibFn(stdlibOpts);
   if (opts.walletFallback) {
-    instance.setWalletFallback(
-      instance.walletFallback({
-        ...opts.walletFallback,
-        providerEnv
-      })
+    lib.setWalletFallback(
+      lib.walletFallback({ ...opts.walletFallback, providerEnv })
     );
   } else if (Object.keys(providerEnv).length) {
-    instance.setProviderByEnv(providerEnv);
+    lib.setProviderByEnv(providerEnv);
   }
 
   if (opts.uniqueInstance) {
-     return opts.instanceKey
-       ? attachReach(instance, opts.instanceKey)
-       : instance;
+    return opts.instanceKey ? attachReach(lib, opts.instanceKey) : lib;
   }
 
-  reach = instance;
+  reach = lib;
   return reach;
 }
 
@@ -160,7 +155,6 @@ export function loadReachWithOpts(
 export function checkMultiStdlib(uniqueReq: boolean) {
   if (uniqueReq && !multiStdlibEnabled) {
     multiStdlibEnabled = true;
-    unsafeAllowMultipleStdlibs();
   }
 }
 

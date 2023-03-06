@@ -1,0 +1,15 @@
+{
+  "name": "reachduck-cli",
+  "version": "0.0.1",
+  "description": "Command-line reachduck tester",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --experimental-modules --unhandled-rejections=strict ./index.mjs"
+  },
+  "author": "JACKCOM",
+  "license": "ISC",
+  "dependencies": {
+    "@jackcom/reachduck": "file:..",
+    "@reach-sh/stdlib": "^0.1.13-rc.3"
+  }
+}

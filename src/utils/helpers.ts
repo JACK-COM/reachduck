@@ -2,14 +2,14 @@ import { Maybe } from "../types";
 
 export const noOp = () => null;
 
+/** Check if running in a browser or cli context */
 export const isBrowser = new Function(
   "try { return this === window } catch(e) { return false; }"
 );
 
+/** In-memory `localStorage` fallback object for non-browser contexts */
 let STORE: Storage;
-/**
- * Generate a unified pointer to `localStorage`. Returns an in-memory
- * fallback object for non-browser contexts */
+/** In-memory `localStorage` fallback object for non-browser contexts */
 export function getStorage() {
   if (!STORE) {
     STORE = isBrowser() ? window?.localStorage : createMemoryStorage();
@@ -90,6 +90,14 @@ export function asMaybe<T extends any>(val?: T): Maybe<T> {
   return ["Some", val as T];
 }
 
+/** @untestable Reads and returns an input argument from command line args */
+export function fromArgs(k: string, fallback = "") {
+  const args = process?.argv || [];
+  const key = `${k.replace(/=$/, "")}=`;
+  const arg = args.find((a) => a.startsWith(key)) || key;
+  return arg.replace(key, "") || fallback;
+}
+
 /** Resolve a `Maybe` value. When `mVal[0]` is `"Some"`, `mVal[1]` has a value */
 export function fromMaybe<T>(
   mVal: Maybe<T>,
@@ -122,7 +130,7 @@ export function formatNumberShort(val: string | number | bigint, round = 2) {
   const ints = parts[0].length;
 
   if (!ints || ints <= 3)
-    return trimTrailingZeros(parseFloat(val.toString()).toFixed(round));
+    return trimTrailingChar(parseFloat(val.toString()).toFixed(round));
 
   // Get number of vals before first 'comma'
   const abbrLength = ints % 3 || 3;
@@ -145,6 +153,40 @@ export function formatNumberShort(val: string | number | bigint, round = 2) {
   const out = `${abbr}${decimals}${abbrevNumber(groups.length)}`;
 
   return out;
+}
+
+/**
+ * Format an atomic currency value
+ * @param amt number to format
+ * @param decs number of decimal digits on the right
+ * @returns formatted value
+ * @example formatAtomicUnits('1.00'); // => '1'
+ */
+export function formatAtomicUnits(
+  amt: number | string | bigint,
+  decs: number = 6
+): string {
+  const splitValue = decs;
+  if (!(Number.isInteger(decs) || 0 < decs)) {
+    throw Error(`Invalid decimal value "${decs}"`);
+  }
+
+  const aStr = amt.toString();
+  if (aStr.includes(".")) {
+    const nVal = Number(aStr) / 10 ** decs;
+    return trimTrailingChar(nVal.toFixed(decs));
+  }
+
+  const split = Math.max(aStr.length - splitValue, 0);
+  const left = trimLeadingChar(aStr.slice(0, split)) || "0";
+  if (decs === 0) return left;
+
+  const padLeading = (str: string, chr: string, length: number) =>
+    `${chr.repeat(Math.max(length - str.length, 0))}${str}`;
+  const rSliced = padLeading(aStr.slice(split), "0", splitValue).slice(0, decs);
+  const right = trimTrailingChar(rSliced);
+
+  return right ? `${left}.${right}` : left;
 }
 
 /** Assert that `path` represents an Image file */
@@ -198,10 +240,23 @@ export function truncateString(str: string, pad = 6): string {
 /** Helper: trim decimals from numeric string */
 export function trimDecimals(val: string) {
   if (val.replace(/0*/, "") === "") return "";
-  return `.${trimTrailingZeros(val)}`;
+  return `.${trimTrailingChar(val)}`;
 }
 
-/** Helper: trim trailing zeros from decimal string */
-export function trimTrailingZeros(val: string) {
-  return val.replace(/0*$/, "").replace(/\.$/, "");
+/**
+ * Helper: trim leading character (usually zeros) from string
+ * @example trimLeadingZeros('001'); // => '1'
+ */
+export function trimLeadingChar(val: string, ch: string | number = 0) {
+  const target = new RegExp("\\b" + ch + "*");
+  return val.replace(target, "").replace(/\.$/, "");
+}
+
+/**
+ * Helper: trim trailing character (usually zeros) from string
+ * @example trimTrailingZeros('1.00'); // => '1'
+ */
+export function trimTrailingChar(val: string, ch: string | number = 0) {
+  const target = new RegExp(ch + "*$\\b");
+  return val.replace(target, "").replace(/\.$/, "");
 }
