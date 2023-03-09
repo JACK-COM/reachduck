@@ -5,7 +5,7 @@ All notable changes to `reachduck` will be documented here.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
  
-## [0.5.1] - 2023-03-XX
+## [0.6.0] - 2023-03-05
 ### Changed
 - ❌ REVERTS internal `unsafeAllowMultipleStdlibs` call, although feature support remains.\
 Users must now call this in their own code before using the functionality as before. 
